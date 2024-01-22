@@ -1,0 +1,1102 @@
+**********************************************************************************************************************************************************************************
+You will learn
+-------------------
+Building Components
+Rendering Markup with JSX
+Managing State
+Passing input to component via props
+Debugging React apps
+
+
+*****************************************************************************Creatin a ListGroup Component***************************************************************************
+
+Open new terminal in vscode and install bootstrap:-
+npm i bootstrap@5.2.3
+
+>Clear App.css and delete index.css	(This is all provided by vite and we don't need it)
+
+>In main.tsx, replace
+ import './index.css'		with
+ import 'bootstrap/dist/css/bootstrap.css'
+
+
+
+-----------------------------------------------------------------
+Now, creating ListGroup components
+-----------------------------------------------------------------
+>Create a folder components under src folder
+
+components folder is not necessary but it is a good practice
+>IN components folder, create 
+ListGroup.tsx
+-----------------
+function ListGroup(){
+    return <h1>ListGroup</h1>;
+}
+
+export default ListGroup;
+
+
+Import ListGroup component in App.tsx		(You should also remove previous import Message)
+App.tsx
+------------------------------------------------------
+import ListGroup from './components/ListGroup';
+
+function App(){
+  const name='Devanshu';
+  return <div><ListGroup/></div>;
+}
+
+export default App;
+
+
+
+>>Go getbootstrap.com	>> docs 
+Under compoments section, click ListGroup
+<ul class="list-group">
+  <li class="list-group-item">An item</li>
+  <li class="list-group-item">A second item</li>
+  <li class="list-group-item">A third item</li>
+  <li class="list-group-item">A fourth item</li>
+  <li class="list-group-item">And a fifth one</li>
+</ul>
+
+copy paste in ListGroup component return statement. 
+
+> Choose default formatter, 
+Open command paletter and select prettier
+
+App.tsx---->
+
+function ListGroup() {
+  return (
+    <ul className="list-group">
+      <li className="list-group-item">An item</li>
+      <li className="list-group-item">A second item</li>
+      <li className="list-group-item">A third item</li>
+      <li className="list-group-item">A fourth item</li>
+      <li className="list-group-item">And a fifth one</li>
+    </ul>
+  );
+}
+
+export default ListGroup;
+
+
+*****************************************************************************Fragments***************************************************************************
+
+Wrap with abbreviation-->
+-----------------------------
+Select the code
+Command Pallette>> Wrap With abbreviation >> Enter the wrapping abbreviation like div.
+
+
+Using fragment:-
+------------------------------
+A component can render only one element, so to return multiple elements from a component, we can wrap the elements in div. But it is not a good approach. So we use Fragment. 
+In app.tsx:-
+
+import { Fragment } from "react";
+
+function ListGroup() {
+  return (
+    <Fragment>
+      <h1>List</h1>
+      <ul className="list-group">
+        <li className="list-group-item">An item</li>
+        <li className="list-group-item">A second item</li>
+        <li className="list-group-item">A third item</li>
+        <li className="list-group-item">A fourth item</li>
+        <li className="list-group-item">And a fifth one</li>
+      </ul>
+    </Fragment>
+  );
+}
+
+export default ListGroup;
+
+But, better approach to use Fragment is below:----	(It will tell we are using Fragment)
+----------------------------------------------------------------------------------------------
+function ListGroup() {
+  return (
+    <>									//It is shorter syntax. Here, we don't need to import Fragment
+      <h1>List</h1>
+      <ul className="list-group">
+        <li className="list-group-item">An item</li>
+        <li className="list-group-item">A second item</li>
+        <li className="list-group-item">A third item</li>
+        <li className="list-group-item">A fourth item</li>
+        <li className="list-group-item">And a fifth one</li>
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+*****************************************************************************Rendering List***************************************************************************
+
+If we want to render items dynamically. 
+ const items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+ items.map((item) => (
+          <li key={item}>{item}</li>
+        ))
+        
+        
+------------------------------------------        
+	items.map((item) => (
+          <li key={item}>{item}</li>
+        ))
+This code changes item to list-item. To use this code under ul element in JSX, we wrap this code with curly braces because JSX allows only 
+html element and React element.
+---------------------------------------------------------------------------------------------------------------------------
+
+function ListGroup() {
+  const items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+
+  return (
+    <>
+      <h1>List</h1>
+      <ul className="list-group">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+*****************************************************************************Conditional Rendering***************************************************************************
+
+ListGroup.tsx:-
+-----------------
+function ListGroup() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+  items = [];
+  if (items.length === 0)
+    return (
+      <>
+        <h1>List</h1>
+        <p>No Item Found</p>
+      </>
+    );
+  return (
+    <>
+      <h1>List</h1>
+      <ul className="list-group">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+Better Way:--
+---------------
+function ListGroup() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+  items = [];
+  return (
+    <>
+      <h1>List</h1>
+      {items.length === 0 ? <p>No Item Found</p> : null}
+      <ul className="list-group">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+Better Way:-
+-------------
+function ListGroup() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+  items = [];
+  const message = items.length === 0 ? <p>No Item Found</p> : null;
+  return (
+    <>
+      <h1>List</h1>
+      {message}
+      <ul className="list-group">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+More Better Way:-
+--------------------
+function ListGroup() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+  items = [];
+  const getMessage = () => {
+    return items.length === 0 ? <p>No Item Found</p> : null;
+  };
+  return (
+    <>
+      <h1>List</h1>
+      {getMessage()}
+      <ul className="list-group">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+More Concise Way:-
+---------------------
+function ListGroup() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+  items = [];
+
+  return (
+    <>
+      <h1>List</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className="list-group">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+------------------------------------------
+How does it work?
+--------------------------------------
+ {items.length === 0 && <p>No item found</p>}
+ 
+ >true && 1
+ 1
+ > true && 'Devanshu'
+ Devanshu
+ > false && 'Devanshu'
+ false
+ 
+ 
+ 
+*****************************************************************************Handling Events***************************************************************************
+
+ListGroup.tsx
+-------------------
+function ListGroup() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+
+  return (
+    <>
+      <h1>List</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className="list-group">
+        {items.map((item, index) => (
+          <li
+            className="list-group-item"
+            key={item}
+            onClick={() => console.log(item,index)}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+ListGroup.tsx
+-------------------
+function ListGroup() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+
+  return (
+    <>
+      <h1>List</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className="list-group">
+        {items.map((item, index) => (
+          <li
+            className="list-group-item"
+            key={item}
+            onClick={(event) => console.log(event)}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+ListGroup.tsx
+--------------------
+import { MouseEvent } from "react";
+
+function ListGroup() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+
+  // Event Handler
+  const handleClick = (event: MouseEvent) => console.log(event);		(even: MounseEvent --> This is type annotation in Typescript)
+
+  return (
+    <>
+      <h1>List</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className="list-group">
+        {items.map((item, index) => (
+          <li className="list-group-item" key={item} onClick={handleClick}>	
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+********************************************************************************************************************************************************
+ListGroup.tsx:
+-----------------
+import { MouseEvent } from "react";
+
+function ListGroup() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+
+  // Event Handler
+  const handleClick = (event: MouseEvent) => console.log(event);
+
+  return (
+    <>
+      <h1>List</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className="list-group">
+        {items.map((item, index) => (
+          <li
+            className="list-group-item active"				//If we add class active, all the items will be highlighted that we don't want.We want to highlight one item at a time.
+            key={item}
+            onClick={(event) => console.log(event)}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+ListGroup.tsx
+------------------
+import { useState } from "react";
+
+function ListGroup() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+
+  // hook
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  return (
+    <>
+      <h1>List</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className="list-group">
+        {items.map((item, index) => (
+          <li
+            className={
+              selectedIndex === index
+                ? "list-group-item active"
+                : "list-group-item"
+            }
+            key={item}
+            onClick={() => {
+              setSelectedIndex(index);
+            }}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+
+
+*****************************************************************************Passing Data via Props***************************************************************************
+
+How to reuse a componenet? Like of colors or list of components.
+We use props. props are input to our components.
+We want to pass array of items and header in each componemt. 
+To do this, we use a typescript feature called interface
+
+
+ListGroup.tsx:
+-----------------
+import { useState } from "react";
+
+interface Props {
+  items: string[];
+  heading: string;
+}
+function ListGroup(props: Props) {
+  // hook
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  return (
+    <>
+      <h1>List</h1>
+      {props.items.length === 0 && <p>No item found</p>}
+      <ul className="list-group">
+        {props.items.map((item, index) => (
+          <li
+            className={
+              selectedIndex === index
+                ? "list-group-item active"
+                : "list-group-item"
+            }
+            key={item}
+            onClick={() => {
+              setSelectedIndex(index);
+            }}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+App.tsx:
+-----------
+import ListGroup from "./components/ListGroup";
+
+function App() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+  return (
+    <div>
+      <ListGroup items={items} heading="Cities" />
+    </div>
+  );
+}
+
+export default App;
+
+
+
+
+ListGroup.tsx:
+---------------------
+import { useState } from "react";
+
+interface Props {
+  items: string[];
+  heading: string;
+}
+function ListGroup({ items, heading }: Props) {
+  // hook
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  return (
+    <>
+      <h1>{heading}</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className="list-group">
+        {items.map((item, index) => (
+          <li
+            className={
+              selectedIndex === index
+                ? "list-group-item active"
+                : "list-group-item"
+            }
+            key={item}
+            onClick={() => {
+              setSelectedIndex(index);
+            }}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+********************************************************************************Passing Functions via Props************************************************************************
+
+ListGroup.tsx:
+------------------
+import { useState } from "react";
+
+interface Props {
+  items: string[];
+  heading: string;
+  onSelectItem: (item: string) => void;			//onSelectItem is similar to onClick
+}
+function ListGroup({ items, heading, onSelectItem }: Props) {
+  // hook
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  return (
+    <>
+      <h1>{heading}</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className="list-group">
+        {items.map((item, index) => (
+          <li
+            className={
+              selectedIndex === index
+                ? "list-group-item active"
+                : "list-group-item"
+            }
+            key={item}
+            onClick={() => {
+              setSelectedIndex(index);
+              onSelectItem(item);
+            }}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+App.tsx:-
+----------------
+import ListGroup from "./components/ListGroup";
+
+function App() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+  const handleSelectItem = (item: string) => {
+    console.log(item);
+  };
+  return (
+    <div>
+      <ListGroup
+        items={items}
+        heading="Cities"
+        onSelectItem={handleSelectItem}
+      />
+    </div>
+  );
+}
+
+export default App;
+
+
+
+********************************************************************************State vs Props************************************************************************
+Difference between props and state
+props:- Input passed to a component
+state:- Data managed by a component
+
+props:- similar to function args
+state:- similar to lacal variables
+
+props:- Immutable
+state:- mutable
+
+props: Cause a re-render
+state:- Cause a re-render
+
+
+
+********************************************************************************Passing Children to a component************************************************************************
+
+Under folder components, create:- 
+-----------------------------------
+alert.tsx
+
+Instead of defining in alert.tsx like below:-
+----------------------------------------------
+function alert(){
+	
+}
+
+export default alert;
+
+
+We have a short-cut:-
+---------------------------
+Add extension:-- ES7+			(Extensions for React/React-Native and Redux in JS/TS with ES7+ synta...)
+type rafce in alert.tsx
+
+rafce stands for ReactArrowFunctionComponentExport
+
+Hit enter and it adds the below code:-
+
+import React from "react";
+
+const Alert = () => {
+  return <div>Alert</div>;
+};
+
+export default Alert;
+
+
+
+Since, we are done with ListGroup.tsx component, so clean code related to this component in App.tsx-->
+------------------------------------------------------------------------------------------------------------
+import Alert from "./components/Alert";
+
+function App() {
+  return (
+    <div>
+      <Alert />
+    </div>
+  );
+}
+
+export default App;
+
+>> Go to getbootstrap >> Component 'alerts'
+-----------------------------------------------
+Alert.tsx:-
+----------
+interface Props {
+  text: string;
+}
+
+const Alert = ({ text }: Props) => {
+  return <div className="alert alert-primary">{text}</div>;
+};
+
+export default Alert;
+
+
+App.tsx:-
+-----------
+import Alert from "./components/Alert";
+
+function App() {
+  return (
+    <div>
+      <Alert text="Hello World" />
+    </div>
+  );
+}
+
+export default App;
+
+
+
+What if the text is too long?
+-------------------------------------
+Alert.tsx:-
+-----------
+import { Children } from "react";
+
+interface Props {
+  children: string;
+}
+
+const Alert = ({ children }: Props) => {
+  return <div className="alert alert-primary">{children}</div>;
+};
+
+export default Alert;
+
+
+App.tsx:-
+--------------
+import Alert from "./components/Alert";
+
+function App() {
+  return (
+    <div>
+      <Alert>Hello World</Alert>
+    </div>
+  );
+}
+
+export default App;
+
+
+What if we want to pass html content:
+-------------------------------------------------------------------------------
+Alert.tsx:-
+-------------
+import { Children, ReactNode } from "react";
+
+interface Props {
+  children: ReactNode;
+}
+
+const Alert = ({ children }: Props) => {
+  return <div className="alert alert-primary">{children}</div>;
+};
+
+export default Alert;
+
+
+App.tsx:-
+------------
+import Alert from "./components/Alert";
+
+function App() {
+  return (
+    <div>
+      <Alert>
+        Hello <span>World</span>
+      </Alert>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+********************************************************************************Inspecting Components With React DevTools************************************************************************
+
+Google --> React Developer Tools
+
+
+
+
+********************************************************************************Exercise: Building a Button Component************************************************************************
+Button.tsx:-
+--------------
+import React from "react";
+
+interface Props {
+  children: string;
+}
+const Button = ({ children }: Props) => {
+  return <div className="btn btn-primary">{children}</div>;
+};
+
+export default Button;
+
+
+App.tsx:-
+-------------
+import Alert from "./components/Alert";
+import Button from "./components/Button";
+
+function App() {
+  return (
+    <div>
+      <Button>Click Button</Button>
+    </div>
+  );
+}
+
+export default App;
+
+
+Now, we have to handle click event:-
+-----------------------------------------
+Button.tsx:-
+--------------
+import React from "react";
+
+interface Props {
+  children: string;
+  color?: string;						//? means the color property is optional
+  onClick: () => void;
+}
+const Button = ({ children, onClick, color = "primary" }: Props) => {		//We are setting value of color primary. That means if user do not pass any value of color. It is primary.
+  return (
+    <div className={"btn btn-" + color} onClick={onClick}>
+      {children}
+    </div>
+  );
+};
+
+export default Button;
+
+
+App.tsx:-
+----------
+import Alert from "./components/Alert";
+import Button from "./components/Button";
+
+function App() {
+  return (
+    <div>
+      <Button onClick={() => console.log("clicked")}>Click Button</Button>		//User did not pass value of color. But can be pass <Button color='secondary' .......
+    </div>
+  );
+}
+
+export default App;
+
+
+----------------------------
+Button.tsx:-
+-----------------------
+import React from "react";
+
+interface Props {
+  children: string;
+  color?: "primary" | "secondary" | "success" | "danger";
+  onClick: () => void;
+}
+const Button = ({ children, onClick, color = "primary" }: Props) => {
+  return (
+    <div className={"btn btn-" + color} onClick={onClick}>
+      {children}
+    </div>
+  );
+};
+
+export default Button;
+
+----------------
+App.tsx:-
+----------------
+import Alert from "./components/Alert";
+import Button from "./components/Button";
+
+function App() {
+  return (
+    <div>
+      <Button color="danger" onClick={() => console.log("clicked")}>			//If we give any other value rather than restricted values of color, we will get compile-time error.
+        Click Button
+      </Button>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+********************************************************************************Exercise: Showing An Alert************************************************************************
+
+>> getBootstrap.com >> alerts >> dismissals
+and this is the code-->
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+
+
+Button.tsx:-
+---------------
+import React from "react";
+
+interface Props {
+  children: string;
+  color?: "primary" | "secondary" | "success" | "danger";
+  onClick: () => void;
+}
+const Button = ({ children, onClick, color = "primary" }: Props) => {
+  return (
+    <div className={"btn btn-" + color} onClick={onClick}>
+      {children}
+    </div>
+  );
+};
+
+export default Button;
+
+
+Alert.tsx:-
+------------
+import { Children, ReactNode } from "react";
+
+interface Props {
+  children: ReactNode;
+}
+
+const Alert = ({ children }: Props) => {
+  return <div className="alert alert-primary">{children}</div>;
+};
+
+export default Alert;
+
+
+App.tsx:-
+--------------
+import { useState } from "react";
+import Alert from "./components/Alert";
+import Button from "./components/Button";
+
+function App() {
+  const [alertVisible, setAlertVisibility] = useState(false);
+  return (
+    <div>
+      {alertVisible && <Alert>My Alert</Alert>}
+      <Button color="danger" onClick={() => setAlertVisibility(true)}>
+        Click Button
+      </Button>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+ON click on the button, it will show the alert. Now, we want to close it--->
+-------------------------------------------------------------------------------
+Alert.tsx:-
+-------------
+import { Children, ReactNode } from "react";
+
+interface Props {
+  children: ReactNode;
+}
+
+const Alert = ({ children }: Props) => {
+  return (
+    <div className="alert alert-primary alert-dismissible">
+      {children}
+      <button
+        type="button"
+        className="btn-close"
+        data-bs-dismiss="alert"
+        aria-label="Close"
+      ></button>
+    </div>
+  );
+};
+
+export default Alert;
+
+
+We can see the close button. We want that when we click this close button, we want to notify to app component that the user clicked on this button. App component will set the visibility to false.Which will cause the app component and all its children to re-render. Now, Final Code----->
+
+Alert.tsx:-
+---------------
+import { Children, ReactNode } from "react";
+
+interface Props {
+  children: ReactNode;
+  onClose: () => void;
+}
+
+const Alert = ({ children, onClose }: Props) => {
+  return (
+    <div className="alert alert-primary alert-dismissible">
+      {children}
+      <button
+        type="button"
+        className="btn-close"
+        onClick={onClose}
+        data-bs-dismiss="alert"
+        aria-label="Close"
+      ></button>
+    </div>
+  );
+};
+
+export default Alert;
+
+
+
+Button.tsx:-
+------------------
+import React from "react";
+
+interface Props {
+  children: string;
+  color?: "primary" | "secondary" | "success" | "danger";
+  onClick: () => void;
+}
+const Button = ({ children, onClick, color = "primary" }: Props) => {
+  return (
+    <div className={"btn btn-" + color} onClick={onClick}>
+      {children}
+    </div>
+  );
+};
+
+export default Button;
+
+
+
+
+App.tsx:-
+-----------------
+import { useState } from "react";
+import Alert from "./components/Alert";
+import Button from "./components/Button";
+
+function App() {
+  const [alertVisible, setAlertVisibility] = useState(false);
+  return (
+    <div>
+      {alertVisible && (
+        <Alert onClose={() => setAlertVisibility(false)}>My Alert</Alert>
+      )}
+      <Button color="danger" onClick={() => setAlertVisibility(true)}>
+        Click Button
+      </Button>
+    </div>
+  );
+}
+
+export default App;
+
+
+*********************************************************************************************************************************************************************************
+											THE END
+*********************************************************************************************************************************************************************************
+
+
+
+
+
+
+

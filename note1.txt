@@ -1,0 +1,123 @@
+node -v		(Need node version 16 or higher)
+********************************************************
+Installing nodejs
+--------------------
+Google>>install nodejs snap
+select version, copy and paste command in terminal. 
+Node comes with npm. So, check 
+node -v
+npm --version
+
+Note: This node is updated automatically when a new patch comes. 
+If you want to update to new version.
+$ sudo snap refresh node --channel=20			(version 20 for nodeJs)
+
+Another way of switching version by using nvm(node version manager)		(I will see it later)
+************************************************************************************************************************************************************
+
+
+There are two ways to create a React app:-
+------------------------------------------
+Using an official tool provided by React team---> Create React App (CRA)
+vite
+
+Run this command:-
+-------------------
+npm create vite@4.1.0						(This will create project in the location where your terminal is opened)
+Enter project name--> react-app
+Select a framework--> react
+select a languate--> typescript
+And get lost!!!
+
+
+cd into react-app
+$npm i		(i stands for install)
+
+Open into vscode
+$ code .
+
+To run web-server:-	(Run in vscode terminal)
+npm run dev
+
+
+************************************************************************************************************************************************************
+Key Files and Folders in this Project
+----------------------------------------
+
+node-modules:- This is where all third party libraries and audit tools are installed.
+public:- This is where public assets of our website exists like images, video files and so on. 
+src:- 
+	App.tsx			(App component--> The only component in our project right now)(Clear this we will write our own code here)
+	App.css			(clear this)
+index.html:-
+package.json
+tsconfig.json---> Telling typescript compiler to compile typescript code to javascript.
+vite.config.ts
+
+************************************************************************************************************************************************************
+									Creating a React Component
+
+Create Message.tsx under src folder.
+
+We will use function based component.
+
+PascalCasing		(Like P is capital and C is capital is example of PascalCasing)
+
+Under Message.tsx file:-
+--------------------------
+function Message(){
+    //JSX: JavaScript XML
+    return <h1>Hello World</h1>
+}
+
+<h1>Hello World</h1>---> It is not HTML. It is JSX (JavaScript XML)	(This code under the hood will get compiled to JavaScript)
+
+
+To use this componenent in other files by importing.
+------------------------------------------------------
+export default Message
+
+Importing Message component in App.tsx		(First of all clean App.tsx)
+---------------------------------------------------------------------------------
+App.tsx:-
+--------------
+import Message from './Message';
+function App(){
+  return <div><Message/></div>
+}
+export default App;					(To use in any other file)
+
+
+
+
+Note: vite will automatically update the server.
+
+*********************************************************************************HOW REACT WORKS***************************************************************************
+App
+.
+.
+.
+Message
+
+React takes this component tree and builds a javascript datastructure called virtual DOM.
+-------------------------------------------------------------------------------------------
+div
+.
+.
+.
+h1
+
+Where each node represents component and its properties. 
+
+
+
+
+
+
+
+
+
+
+
+
+
