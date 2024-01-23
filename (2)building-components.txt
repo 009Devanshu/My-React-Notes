@@ -469,7 +469,7 @@ export default ListGroup;
 
 *****************************************************************************Passing Data via Props***************************************************************************
 
-How to reuse a componenet? Like of colors or list of components.
+How to reuse a componenet? Like a list of colors or list of components.
 We use props. props are input to our components.
 We want to pass array of items and header in each componemt. 
 To do this, we use a typescript feature called interface
@@ -583,7 +583,7 @@ import { useState } from "react";
 interface Props {
   items: string[];
   heading: string;
-  onSelectItem: (item: string) => void;			//onSelectItem is similar to onClick
+  onSelectItem: (item: string) => void;			//onSelectItem is similar to onClick and it is built-in function
 }
 function ListGroup({ items, heading, onSelectItem }: Props) {
   // hook
@@ -1023,7 +1023,7 @@ import { Children, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
-  onClose: () => void;
+  onClose: () => void;		//onClose is our defined function.
 }
 
 const Alert = ({ children, onClose }: Props) => {
