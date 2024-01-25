@@ -1,0 +1,596 @@
+********************INTRODUCTION********
+>>Vanilla css
+>>CSS Modules 
+>>CSS-in-JS 
+>>Using CSS Libraries
+
+****************************************************************************************VANILLA CSS*************************************************
+Vanilla CSS vs Plain CSS is not recommended, because we already have css libraries like bootstrap.
+
+In main.tsx-->
+-----------------------
+Remove this line---> 
+import 'bootstrap/dist/css/bootstrap.css'
+
+components 
+	ListGroup.css	
+
+Under components folder, we can store files related to components like abc.tsx file and abc.css file in abc folder	(It is a good approach for file management)
+So,
+components
+	ListGroup
+		ListGroup.tsx
+		ListGroup.css
+	
+ListGroup.tsx:-
+-------------------
+import { useState } from "react";
+import "./ListGroup.css";			//Added This new line
+
+interface Props {
+  items: string[];
+  heading: string;
+  onSelectItem: (item: string) => void;
+}
+function ListGroup({ items, heading, onSelectItem }: Props) {
+  // hook
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  return (
+    <>
+      <h1>{heading}</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className="list-group">
+        {items.map((item, index) => (
+          <li
+            className={
+              selectedIndex === index
+                ? "list-group-item active"
+                : "list-group-item"
+            }
+            key={item}
+            onClick={() => {
+              setSelectedIndex(index);
+              onSelectItem(item);
+            }}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+ListGroup.css:-
+--------------------
+.list-group{
+    list-style: none;
+}
+
+
+App.tsx:-
+-------------------
+import ListGroup from "./components/ListGroup/ListGroup";		//Added this line
+
+function App() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+  const handleSelectItem = (item: string) => {
+    console.log(item);
+  };
+  return (
+    <div>
+      <ListGroup
+        items={items}
+        heading="Cities"
+        onSelectItem={handleSelectItem}
+      />
+    </div>
+  );
+}
+
+export default App;
+
+
+
+
+-----------------------------------------------------------------------------------------
+Instead of writing below line in app.tsx--->
+import ListGroup from "./components/ListGroup/ListGroup";
+
+components
+	ListGroup
+		index.ts
+		
+index.ts
+--------------
+import ListGroup from './ListGroup';
+
+export default ListGroup;
+
+
+
+
+update line import ListGroup from "./components/ListGroup/ListGroup"; in app.tsx with -->
+import ListGroup from "./components/ListGroup";
+
+app.tsx:-
+-------------
+import ListGroup from "./components/ListGroup";
+
+function App() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+  const handleSelectItem = (item: string) => {
+    console.log(item);
+  };
+  return (
+    <div>
+      <ListGroup
+        items={items}
+        heading="Cities"
+        onSelectItem={handleSelectItem}
+      />
+    </div>
+  );
+}
+
+export default App;
+
+
+****************************************************************************************CSS MODULES**********************************************************************
+
+App.css				//In App.css, added the below code. 
+---------------
+.list-group{
+    background: red;
+}
+
+
+App.tsx
+------------------
+import ListGroup from "./components/ListGroup";
+import "./App.css";				//New Line added
+
+function App() {
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"];
+  const handleSelectItem = (item: string) => {
+    console.log(item);
+  };
+  return (
+    <div>
+      <ListGroup
+        items={items}
+        heading="Cities"
+        onSelectItem={handleSelectItem}
+      />
+    </div>
+  );
+}
+
+export default App;
+
+
+list-group class will get properties from both App.css and ListGroup.css. So, both will affect the class. 	(That means, It will have clashes)
+
+This is the problem, that css modules try to solve:-
+-------------------------------------------------------
+We use css modules
+
+Rename (ListGroup.css -------> ListGroup.module.css)
+
+
+ListGroup.tsx:-
+---------------------
+import { useState } from "react";
+import styles from "./ListGroup.module.css";
+
+interface Props {
+  items: string[];
+  heading: string;
+  onSelectItem: (item: string) => void;
+}
+function ListGroup({ items, heading, onSelectItem }: Props) {
+  // hook
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  return (
+    <>
+      <h1>{heading}</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className={styles["list-group"]}>			//If we do, {styles.list-group} error. Because list-group has hyphon which is not allowed in any property.
+        {items.map((item, index) => (
+          <li
+            className={
+              selectedIndex === index
+                ? "list-group-item active"
+                : "list-group-item"
+            }
+            key={item}
+            onClick={() => {
+              setSelectedIndex(index);
+              onSelectItem(item);
+            }}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+
+---------------------------------------------------------------
+If you do not want to write like ---> styles["list-group"]
+---------------------------------------------------------------
+
+ListGroup.module.css:--
+-----------------------
+.listGroup{
+    list-style: none;
+    padding:0;
+}
+
+
+
+ListGroup.tsx:-
+--------------------
+import { useState } from "react";
+import styles from "./ListGroup.module.css";	
+
+interface Props {
+  items: string[];
+  heading: string;
+  onSelectItem: (item: string) => void;
+}
+function ListGroup({ items, heading, onSelectItem }: Props) {
+  // hook
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  return (
+    <>
+      <h1>{heading}</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className={styles.ListGroup}>				//Modified Here
+        {items.map((item, index) => (
+          <li
+            className={
+              selectedIndex === index
+                ? "list-group-item active"
+                : "list-group-item"
+            }
+            key={item}
+            onClick={() => {
+              setSelectedIndex(index);
+              onSelectItem(item);
+            }}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+------------------------------------------------------------------
+What If you want to add multiple classes?
+------------------------------------------------------------------
+
+ListGroup.module.css:-
+-----------------------
+.listGroup{
+    list-style: none;
+    padding:0;
+}
+
+.container{				//Added this code
+    background: yellow;
+}
+
+
+-------------------
+ListGroup.tsx:-
+-------------------
+import { useState } from "react";
+import styles from "./ListGroup.module.css";
+
+interface Props {
+  items: string[];
+  heading: string;
+  onSelectItem: (item: string) => void;
+}
+function ListGroup({ items, heading, onSelectItem }: Props) {
+  // hook
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  return (
+    <>
+      <h1>{heading}</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <ul className={[styles.ListGroup, styles.container].join()}>
+        {items.map((item, index) => (
+          <li
+            className={
+              selectedIndex === index
+                ? "list-group-item active"
+                : "list-group-item"
+            }
+            key={item}
+            onClick={() => {
+              setSelectedIndex(index);
+              onSelectItem(item);
+            }}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+
+****************************************************************************************CSS-IN-JS**********************************************************************
+
+It is another approach for stylin our components. Some people love it, some people hate it.
+
+Some of the benefits-->
+----------------------
+>>Scoped Styles			(Just like css-modules)
+>>All the css & JS/TS code in one place
+>>Easier to delete a component
+>>Easier to style based on props/state		(We will see it)
+
+
+Different libraries that implement this concept
+---------------------------------------------------
+>>styled-component
+>>Emotion
+>>Polished
+
+
+Under your project
+-------------------
+npm i styled-components
+
+
+ListGroup.tsx
+--------------------------
+import { useState } from "react";
+import styles from "./ListGroup.css";
+import styled from "styled-components";
+
+const List = styled.ul`
+  list-style: none;
+  padding: 0;
+`;
+
+interface ListItemProps {
+  active: boolean;
+}
+
+const ListItem = styled.li<ListItemProps>`
+  padding: 5px 0;
+  background: ${(props) => (props.active ? "blue" : "none")};
+`;
+
+interface Props {
+  items: string[];
+  heading: string;
+  onSelectItem: (item: string) => void;
+}
+function ListGroup({ items, heading, onSelectItem }: Props) {
+  // hook
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  return (
+    <>
+      <h1>{heading}</h1>
+      {items.length === 0 && <p>No item found</p>}
+      <List>
+        {items.map((item, index) => (
+          <ListItem
+            active={index === selectedIndex}
+            key={item}
+            onClick={() => {
+              setSelectedIndex(index);
+              onSelectItem(item);
+            }}
+          >
+            {item}
+          </ListItem>
+        ))}
+      </List>
+    </>
+  );
+}
+
+export default ListGroup;
+
+
+****************************************************************************************SEPARTION OF CONCERNS**********************************************************************
+
+
+
+
+****************************************************************************************INLINE STYLES**********************************************************************
+
+
+
+****************************************************************************************POPULAR UI LIBRARIES**********************************************************************
+
+Bootstrap
+Meterial UI 
+Tailwind
+and many more
+
+
+ChakraUI
+DaisyUI
+These gives components instead of utility classes.
+We will use ChakraUI in the course.
+
+
+****************************************************************************************Adding Icons**********************************************************************
+
+/react-app
+npm i react-icons@4.7.1
+
+Google---> react icons >> Choose an icon
+
+App.tsx:-
+-----------
+import { BsCalculatorFill } from "react-icons/bs";
+
+function App() {
+  return (
+    <div>
+     <BsCalculatorFill color="red" size={40} />			//We can change size and color
+    </div>
+  );
+}
+
+export default App;
+
+****************************************************************************************Exercise Using CSS Module**********************************************************************
+
+
+components
+	Button.module.css
+	
+
+Button.module.css
+-------------------
+.btn{
+    padding:8px 12px;
+    border-radius: 3px;
+    border:0;
+}
+.btn-primary{
+    background-color: #0d6efd;
+    color:white;
+}
+
+Button.tsx:-
+---------------
+import styles from "./Button.module.css";
+
+interface Props {
+  children: string;
+  color?: "primary" | "secondary" | "danger";
+  onClick: () => void;
+}
+
+const Button = ({ children, onClick, color = "primary" }: Props) => {
+  return (
+    <button
+      className={[styles.btn, styles["btn-" + color]].join(" ")}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+};
+
+export default Button;
+
+
+
+App.tsx:-
+-----------
+import Button from "./components/Button/Button";
+
+function App() {
+  return (
+    <div>
+      <Button onClick={() => {}}>Click Button</Button>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+****************************************************************************************Building a like component**********************************************************************
+
+components
+	Like.tsx
+	
+Like.tsx:-
+-------------
+import { useState } from "react";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+
+interface Props {
+  onClick: () => void;
+}
+
+const Like = ({ onClick }: Props) => {
+  const [status, setStatus] = useState(true);
+  const toggle = () => {
+    setStatus(!status);
+    onClick();
+  };
+  if (status) return <AiFillHeart color="#ff6b81" size={20} onClick={toggle} />;
+  return <AiOutlineHeart size={20} onClick={toggle} />;
+};
+
+export default Like;
+
+
+App.tsx:-
+------------------
+import Like from "./components/Like";
+
+function App() {
+  return (
+    <div>
+      <Like onClick={() => console.log("Clicked")} />
+    </div>
+  );
+}
+
+export default App;
+
+
+
+
+
+****************************************************************************************THE END**********************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

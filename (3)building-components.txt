@@ -812,6 +812,8 @@ Google --> React Developer Tools
 
 
 ********************************************************************************Exercise: Building a Button Component************************************************************************
+Under components--->
+
 Button.tsx:-
 --------------
 import React from "react";
