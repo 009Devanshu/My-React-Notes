@@ -1,16 +1,20 @@
 ********************************************************************************Schema Based Validation With Zod*****************************************************************************
 
+AS we have couple of validation rules in the middle of mark-up, For example in previous examples--->
+ {...register("name", { required: true, minLength: 3 })}
+ But, as our form becomes more complex, we end-up with lots of validation rules all over the place. In that case, it is better to use Schema based validation. There are various libraries out there, that allow all our validation rules in a single place which we call a schema. 
+ >>Joi
+ >>Yup
+ >>Zod
 
 npm i zod@3.20.6
 
 
 
 
+npm i @hookform/resolvers@2.9.11  //This library includes resolvers for various schema based validation 
+                                  //libraries like zod, Joi, Yup
 
-
-
-
-npm i @hookform/resolvers@2.9.11
 
 ----------------------
 Form.tsx:-
@@ -25,12 +29,13 @@ const schema = z.object({
     .string()
     .min(3, { message: "Name must contain atleast 3 characters" }),
   age: z
-    .number({ invalid_type_error: "Age field is required" })
+    .number({ invalid_type_error: "Age field is required" }) //If pass empty string, React accepts it as 
+                                                             //nan, so we are doing this. 
     .min(18, { message: "age must be atleast 18" }),
 });
 
-type FormData = z.infer<typeof schema>;
-
+type FormData = z.infer<typeof schema>; //It returns type of typescript that is similar to interface
+                                        //We can define shape of our Form with this interface. 
 const Form = () => {
   const {
     register,
@@ -58,7 +63,7 @@ const Form = () => {
           Age
         </label>
         <input
-          {...register("age", { valueAsNumber: true })}
+          {...register("age", { valueAsNumber: true })} //Instruct that value will be number from form
           id="age"
           type="number"
           className="form-control"

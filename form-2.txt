@@ -44,11 +44,83 @@ const Form = () => {
 export default Form;
 
 
-If we sumbit this line without valid data. We will not see message of FieldValues (person object) on the console. Because React-hook-form will only our handler function const onSubmit = (data: FieldValues) => console.log(data); if the form is valid. 
-
+If we sumbit this line without valid data. We will not see message of FieldValues (person object) on the console. Because React-hook-form will only call our handler function const onSubmit = (data: FieldValues) => console.log(data); if the form is valid. 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
 
+---------------------
+Form.tsx:-
+---------------------
+import React, { FormEvent, useState } from "react";
+import { FieldValues, useForm } from "react-hook-form";
+
+const Form = () => {
+  const {register,handleSubmit,formState} = useForm();
+  //console.log(formState);//You can see properties like errors, isDirty, isLoading, isValid etc.
+  console.log(formState.errors);//can see error object with name field,type of this object is  required 
+  const onSubmit = (data: FieldValues) => console.log(data);
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="mb-3">
+        <label htmlFor="name" className="form-label">
+          Name
+        </label>
+        <input
+          {...register("name", { required: true, minLength: 3 })}
+          id="name"
+          type="text"
+          className="form-control"
+        />
+        {errors.name?.type === "required" && (
+          <p className="text-danger">The name field is required</p>
+        )}
+        {errors.name?.type === "minLength" && (
+          <p className="text-danger">The name must be atleast 3 characters</p>
+        )}
+      </div>
+      <div className="mb-3">
+        <label htmlFor="age" className="form-label">
+          Age
+        </label>
+        <input
+          {...register("age")}
+          id="age"
+          type="number"
+          className="form-control"
+        />
+      </div>
+      <button className="btn btn-primary" type="submit">
+        Submit
+      </button>
+    </form>
+  );
+};
+
+export default Form;
+
+
+
+-----------------------
+App.tsx:-
+-----------------------
+import ExpendableText from "./components/ExpandableText";
+import Form from "./components/Form";
+
+function App() {
+  return (
+    <div>
+      <Form />
+    </div>
+  );
+}
+export default App;
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
 
 ---------------------
 Form.tsx:-
@@ -254,6 +326,7 @@ App.tsx:-
 --------------------
 
 ***************************************************************************************Accessing Input Fields*****************************************************************************
+(Note: This tutorial is after stateHook, not Reat-hook-form. So consider it after state hook implementation, so it is very initial concept)
 
 We have known about useState hook. We have another hook called useRef. 
 With the help of useRef hook, we can reference to DOM elements. 

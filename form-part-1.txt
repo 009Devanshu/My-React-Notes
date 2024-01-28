@@ -124,7 +124,9 @@ export default App;
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
+-----------------
+Form.tsx:-
+-----------------
 
 const Form = () => {
   return (
@@ -325,7 +327,7 @@ const Form = () => {
           onChange={(event) =>
             setPerson({ ...person, name: event.target.value })
           }
-          value={person.name}			//Now, it is controlled component, because its state is entirely controlled by React	(Because of value={person.name})
+          value={person.name}			//Now, it is controlled component, because its state is entirely controlled by React	(Because of value={person.name} and stateHook)
           id="name"				//The value of input field is not managed by Dom but instead stored and updated by component state. 
           type="text"
           className="form-control"
@@ -375,6 +377,8 @@ export default App;
 
 *****************************************************************************MANAGING FORMS WITH REACT HOOK FORM**************************************************************************
 
+As the form becomes more complex, managing the form state with the state hook becomes time consuming and error prone. 
+
 npm i react-hook-form@7.43			(With the help of react-hook-form, we can build Form with less code)
 
 
@@ -409,10 +413,12 @@ const Form = () => {
 
 ..
 ..
-You can see name object and its properties on the console. 
+
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+We don't need stateHook person object. So delete it. 
+
 
 -------------------
 Form.tsx:-
@@ -431,7 +437,7 @@ const Form = () => {
           Name
         </label>
         <input
-          {...register("name")}						//It will provide many properties along with value and onChange
+          {...register("name")}						//It will provide many properties along with value 
           id="name"
           type="text"
           className="form-control"
