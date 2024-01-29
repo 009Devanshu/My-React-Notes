@@ -1,0 +1,570 @@
+********************************************************************************************************************************************************************
+									PROJECT EXPENSE TRACKER
+********************************************************************************************************************************************************************
+
+
+*************************************************************************Building Expense List**********************************************************************
+
+Create folder under src folder---> expense-tracker. Under expense-tracker folder, add folder components
+
+src
+  expense-tracker
+    components
+      ExpenseList.tsx
+
+
+
+---------------------------------------------------------
+table.table.table-bordered
+
+<table className="table table-bordered"></table>;
+---------------------------------------------------------
+
+----------------------------------------------------------
+thead>tr>th*4
+<thead>
+  <tr>
+    <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+  </tr>
+</thead>
+----------------------------------------------------------
+
+----------------------------------------------------------
+button.btn.btn-outline-danger
+<button className="btn btn-outline-danger"></button>		
+----------------------------------------------------------
+An outline button does not have backgroud color, it only has border. 
+
+----------------------------------------------------------
+tfoot>tr>td*4
+<tfoot>
+  <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</tfoot>
+----------------------------------------------------------
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+      
+----------------------------
+ExpenseList.tsx:    
+----------------------------
+
+import React from "react";
+
+interface Expense {
+  id: number;
+  description: string;
+  amount: number;
+  category: string;
+}
+
+interface Props {
+  expenses: Expense[];
+  onDelete: (id: number) => void;		//
+}
+
+const ExpenseList = ({ expenses, onDelete }: Props) => {
+  return (
+    <table className="table table-bordered">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Category</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {expenses.map((expense) => (
+          <tr key={expense.id}>
+            <td>{expense.description}</td>
+            <td>{expense.category}</td>
+            <td>{expense.amount}</td>
+            <td>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => onDelete(expense.id)}
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td>
+            $
+            {expenses
+              .reduce((acc, expense) => expense.amount + acc, 0)
+              .toFixed(2)}
+          </td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  );
+};
+
+export default ExpenseList;
+
+
+----------------------------------------------------------------------------
+Note: In TypeScript, when you define a function type in an interface or a type definition, you're describing the shape of a function that conforms to that type. Specifically, (id: number) => void represents a function that takes a number parameter (id) and returns void (i.e., it doesn't return anything). (  onDelete: (id: number) => void; in interface Props)
+
+----------------------------------
+App.tsx:-
+----------------------------------
+import ExpendableText from "./components/ExpandableText";
+import Form from "./components/Form";
+import ExpenseList from "./expense-tracker/components/ExpenseList";
+
+function App() {
+  const expenses = [
+    { id: 1, description: "aaa", amount: 10, category: "Utilities" },
+    { id: 2, description: "bbb", amount: 10, category: "Utilities" },
+    { id: 3, description: "ccc", amount: 10, category: "Utilities" },
+    { id: 4, description: "ddd", amount: 10, category: "Utilities" },
+  ];
+  return (
+    <div>
+      <ExpenseList
+        expenses={expenses}
+        onDelete={(id) => console.log("Delete", id)}
+      />
+    </div>
+  );
+}
+export default App;
+
+
+----------------------------------------------------
+Note: - We can not do (id)=>void ------------> onDelete{(id)=>void}. In javascript or typescript, It does represents actual function body. So you will have to provide function body. 
+----------------------------------------------------
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+--------------------------
+ExpenseList.tsx:-
+--------------------------
+import React from "react";
+
+interface Expense {
+  id: number;
+  description: string;
+  amount: number;
+  category: string;
+}
+
+interface Props {
+  expenses: Expense[];
+  onDelete: (id: number) => void;
+}
+
+const ExpenseList = ({ expenses, onDelete }: Props) => {
+  if (expenses.length === 0) return null;
+  return (
+    <table className="table table-bordered">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Category</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {expenses.map((expense) => (
+          <tr key={expense.id}>
+            <td>{expense.description}</td>
+            <td>{expense.category}</td>
+            <td>{expense.amount}</td>
+            <td>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => onDelete(expense.id)}
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td>
+            $
+            {expenses
+              .reduce((acc, expense) => expense.amount + acc, 0)
+              .toFixed(2)}
+          </td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  );
+};
+
+export default ExpenseList;
+
+
+------------------------
+App.tsx:-
+------------------------
+import { useState } from "react";
+import ExpendableText from "./components/ExpandableText";
+import Form from "./components/Form";
+import ExpenseList from "./expense-tracker/components/ExpenseList";
+
+function App() {
+  const [expenses, setExpenses] = useState([
+    { id: 1, description: "aaa", amount: 10, category: "Utilities" },
+    { id: 2, description: "bbb", amount: 10, category: "Utilities" },
+    { id: 3, description: "ccc", amount: 10, category: "Utilities" },
+    { id: 4, description: "ddd", amount: 10, category: "Utilities" },
+  ]);
+  return (
+    <div>
+      <ExpenseList
+        expenses={expenses}
+        onDelete={(id) => setExpenses(expenses.filter((e) => e.id !== id))}
+      />
+    </div>
+  );
+}
+export default App;
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+
+*************************************************************************Building ExpenseFilter**********************************************************************
+
+
+
+src
+  expense-tracker
+    components
+      ExpenseList.tsx
+      ExpenseFilter.tsx
+
+
+------------------------------------------------
+select.form-select
+<select name="" id="" className="form-select"></select>;
+------------------------------------------------
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+------------------------
+ExpenseFilter
+------------------------
+import React from "react";
+
+interface Props {
+  onSelectCategory: (category: string) => void;
+}
+
+const ExpenseFilter = ({ onSelectCategory }: Props) => {
+  return (
+    <select
+      className="form-select"
+      onChange={(event) => onSelectCategory(event.target.value)}
+    >
+      <option value="">All Categories</option>
+      <option value="Groceries">Groceries</option>
+      <option value="Utilities">Utilities</option>
+      <option value="Entertainment">Entertainment</option>
+    </select>
+  );
+};
+
+export default ExpenseFilter;
+
+
+
+-----------------
+App.tsx:-
+-----------------
+import { useState } from "react";
+import ExpendableText from "./components/ExpandableText";
+import Form from "./components/Form";
+import ExpenseList from "./expense-tracker/components/ExpenseList";
+import ExpenseFilter from "./expense-tracker/components/ExpenseFilter";
+
+function App() {
+  const [expenses, setExpenses] = useState([
+    { id: 1, description: "aaa", amount: 10, category: "Utilities" },
+    { id: 2, description: "bbb", amount: 10, category: "Utilities" },
+    { id: 3, description: "ccc", amount: 10, category: "Utilities" },
+    { id: 4, description: "ddd", amount: 10, category: "Utilities" },
+  ]);
+  return (
+    <div>
+      <div className="mb-3">
+        <ExpenseFilter onSelectCategory={(category) => console.log(category)} />
+      </div>
+      <ExpenseList
+        expenses={expenses}
+        onDelete={(id) => setExpenses(expenses.filter((e) => e.id !== id))}
+      />
+    </div>
+  );
+}
+export default App;
+
+
+-------------------------
+ExpenseList.tsx:-
+-------------------------
+import React from "react";
+
+interface Expense {
+  id: number;
+  description: string;
+  amount: number;
+  category: string;
+}
+
+interface Props {
+  expenses: Expense[];
+  onDelete: (id: number) => void;
+}
+
+const ExpenseList = ({ expenses, onDelete }: Props) => {
+  if (expenses.length === 0) return null;
+  return (
+    <table className="table table-bordered">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Category</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {expenses.map((expense) => (
+          <tr key={expense.id}>
+            <td>{expense.description}</td>
+            <td>{expense.category}</td>
+            <td>{expense.amount}</td>
+            <td>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => onDelete(expense.id)}
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td>
+            $
+            {expenses
+              .reduce((acc, expense) => expense.amount + acc, 0)
+              .toFixed(2)}
+          </td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  );
+};
+
+export default ExpenseList;
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+-------------------------
+ExpenseFilter.tsx:-
+-------------------------
+import React from "react";
+
+interface Props {
+  onSelectCategory: (category: string) => void;
+}
+
+const ExpenseFilter = ({ onSelectCategory }: Props) => {
+  return (
+    <select
+      className="form-select"
+      onChange={(event) => onSelectCategory(event.target.value)}
+    >
+      <option value="">All Categories</option>
+      <option value="Groceries">Groceries</option>
+      <option value="Utilities">Utilities</option>
+      <option value="Entertainment">Entertainment</option>
+    </select>
+  );
+};
+
+export default ExpenseFilter;
+
+
+---------------------------
+App.tsx:-
+---------------------------
+import { useState } from "react";
+import ExpendableText from "./components/ExpandableText";
+import Form from "./components/Form";
+import ExpenseList from "./expense-tracker/components/ExpenseList";
+import ExpenseFilter from "./expense-tracker/components/ExpenseFilter";
+
+function App() {
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [expenses, setExpenses] = useState([
+    { id: 1, description: "aaa", amount: 10, category: "Utilities" },
+    { id: 2, description: "bbb", amount: 10, category: "Utilities" },
+    { id: 3, description: "ccc", amount: 10, category: "Utilities" },
+    { id: 4, description: "ddd", amount: 10, category: "Utilities" },
+  ]);
+
+  const visibleExpenses = selectedCategory
+    ? expenses.filter((e) => e.category === selectedCategory)
+    : expenses;
+
+  return (
+    <div>
+      <div className="mb-3">
+        <ExpenseFilter
+          onSelectCategory={(category) => setSelectedCategory(category)}
+        />
+      </div>
+      <ExpenseList
+        expenses={visibleExpenses}
+        onDelete={(id) => setExpenses(expenses.filter((e) => e.id !== id))}
+      />
+    </div>
+  );
+}
+export default App;
+
+
+------------------------------
+ExpenseList.tsx:-
+------------------------------
+import React from "react";
+
+interface Expense {
+  id: number;
+  description: string;
+  amount: number;
+  category: string;
+}
+
+interface Props {
+  expenses: Expense[];
+  onDelete: (id: number) => void;
+}
+
+const ExpenseList = ({ expenses, onDelete }: Props) => {
+  if (expenses.length === 0) return null;
+  return (
+    <table className="table table-bordered">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Category</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {expenses.map((expense) => (
+          <tr key={expense.id}>
+            <td>{expense.description}</td>
+            <td>{expense.category}</td>
+            <td>{expense.amount}</td>
+            <td>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => onDelete(expense.id)}
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td>
+            $
+            {expenses
+              .reduce((acc, expense) => expense.amount + acc, 0)
+              .toFixed(2)}
+          </td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  );
+};
+
+export default ExpenseList;
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
