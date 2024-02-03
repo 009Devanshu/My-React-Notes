@@ -1,0 +1,2015 @@
+******************************************************Understanding the Effect Hook****************************************
+
+>>
+As we know that React-component should be a pure component. It gives the same result for the same input. A pure component is a component that only renders based on its props and state. 
+To keep components pure, Keep changes out of the render phase. 
+
+>>
+----------------------------------------------------------
+Side-Effects ---> Changing something outside of component 
+----------------------------------------------------------
+There are some situations like--->
+Store data in local storage. 
+Call the server to fetch/save data. 
+Manually modify the DOM. 
+
+None of them are about rendering a component.
+So, where we can implement that. 
+Here comes the Effect Hook. 
+
+useEffect(()=>{})
+To Execute a piece of code after a component is rendered. 
+
+
+----------------------
+App.tsx:-
+----------------------
+import React, { useEffect, useRef } from "react";
+
+const App = () => {
+  const ref = useRef<HTMLInputElement>(null);
+  
+  //after render
+  useEffect(() => {
+    //Side-Effect
+    if (ref.current) ref.current.focus();
+  });
+  useEffect(() => {
+    document.title = "My App";
+  });
+  return (
+    <div>
+      <input ref={ref} type="text" className="form-control" />
+    </div>
+  );
+};
+
+export default App;
+
+
+This component returns JSX. In this case, it is div containing input element. 
+
+if (ref.current) ref.current.focus(); 
+	This checks if ref.current is not null (i.e., if the input element referenced by ref exists in the DOM). If it exists (ref.current is truthy), it calls the focus() method on the input element, which focuses on the input, making it ready for user input. In this line, we are manipulating the DOM. Here, we are changing the state of a DOM. So, this piece of code has a side-effect. It is changing something outside of the component. Our component is no longer a pure component. To make it pure---> 
+Write this line in Effect Hook---> 
+  
+useEffect(() => {
+  //Side-Effect
+  if (ref.current) ref.current.focus();
+});
+	
+
+Note:-
+Just like state hook and ref hook, we can only call the effect hook at the top level of our component. We can not call it inside a loop or if-else statements. 
+Similar to ref and state hooks, we can call it multiple times for different purposes.  For example--->
+
+//after render
+useEffect(() => {
+  //Side-Effect
+  if (ref.current) ref.current.focus();
+});
+useEffect(() => {
+  document.title = "My App";
+});
+
+******************************************************Effect Dependencies****************************************
+
+
+useEffect(() => {
+  
+});
+As we know that this function will be executed after each render. This is the default behaviour. 
+There are many situations where we don't want this default behaviour. We want more control over when this function should be executed. 
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+----------------------
+ProductList.tsx:-
+----------------------
+import React, { useEffect, useState } from "react";
+
+const ProductList = () => {
+  const [products, setProducts] = useState<string[]>([]);
+  useEffect(() => {
+    console.log("Fetching Products");
+    setProducts(["Clothing", "Household"]);
+  });
+  return <div>ProductList</div>;
+};
+
+export default ProductList;
+
+-------------------------
+App.tsx:-
+-------------------------
+import React, { useEffect, useRef } from "react";
+import ProductList from "./components/ProductList";
+
+const App = () => {
+  useEffect(() => {});
+
+  return <div><ProductList /></div>;
+};
+
+export default App;
+
+--------------------------------------------------------
+We will end up infinite loop. (You can see on the console of browser). Why is this happening?--->
+ 
+useEffect(() => {
+  console.log("Fetching Products");
+  setProducts(["Clothing", "Household"]);//We are updating the state which triggers another render. And after each render 
+});					 //useEffect function is running. Again during running this function, setProductios 	
+					 //function will again cause re-rendering. This process will go again and again. 
+					 
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END	
+How to solve this problem?
+We should tell React to run this effect only once, the first time when the component is rendered. We will use array of dependency-->
+-----------------------------
+In ProductList.tsx:-
+-----------------------------
+
+ useEffect(() => {
+    console.log("Fetching Products");
+    setProducts(["Clothing", "Household"]);
+  },[]);	
+ 
+In this code, we added an array of dependences.  useEffect function will be dependent on this array. When any value in this array is changed, React will re-run this effect. But, since we are passing an empty array, this effect is not dependent on any value. So, it will be executed only once. 
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+-------------------------
+ProductList.tsx:-
+-------------------------
+import React, { useEffect, useState } from "react";
+
+const ProductList = () => {
+  const [products, setProducts] = useState<string[]>([]);
+  useEffect(() => {
+    console.log("Fetching Products");
+    setProducts(["Clothing", "Household"]);
+  }, []);					//Change in this line
+  return <div>ProductList</div>;
+};
+
+export default ProductList;
+
+
+------------------
+App.tsx:-
+------------------
+import React, { useEffect, useRef } from "react";
+import ProductList from "./components/ProductList";
+
+const App = () => {
+  useEffect(() => {});
+
+  return (
+    <div>
+      <ProductList />
+    </div>
+  );
+};
+
+export default App;
+
+---------------------------------------------------------
+Output:-
+Fetching Products
+Fetchint Products
+
+Explain:-
+We don't see those errors any more, but we are fetching products twice. 
+This has to do with strict mode. When strict mode is on, React renders each component twice. It only happens in development mode. It does not happen in production.
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+-------------------------
+ProductList.tsx:-				//No Change in this file
+-------------------------
+import React, { useEffect, useState } from "react";
+
+const ProductList = () => {
+  const [products, setProducts] = useState<string[]>([]);
+  useEffect(() => {
+    console.log("Fetching Products");
+    setProducts(["Clothing", "Household"]);
+  }, []);
+  return <div>ProductList</div>;
+};
+
+export default ProductList;
+
+-----------------------
+App.tsx:-
+-----------------------
+import React, { useEffect, useRef, useState } from "react";
+import ProductList from "./components/ProductList";
+
+const App = () => {
+  const [category, setCategory] = useState("");
+
+  return (
+    <div>
+      <select
+        className="form-select"
+        onChange={(event) => setCategory(event.target.value)}
+      >
+        <option value=""></option>
+        <option value="Clothing">Clothing</option>
+        <option value="Household">Household</option>
+      </select>
+      <ProductList />
+    </div>
+  );
+};
+
+export default App;
+
+
+---------------------
+We can see the update in state variable---> 
+Add Extension, React Developer Tools
+After Running Application, Go to browser >> Open Components Functionality of React Developer Tools
+Choose any Category. 
+You will see the change of state.  
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+Now, we want to pass the selected category as a prop to ProductList component. 
+
+Instead of declaring interface Props,--->
+--------------------------- 
+In ProductList.tsx:-
+---------------------------
+...
+...
+const ProductList = ({ category }: { category: string }) => {		//We are declaring interface in-line. 
+  const [products, setProducts] = useState<string[]>([]);
+  useEffect(() => {
+    console.log("Fetching Products");
+    setProducts(["Clothing", "Household"]);
+  }, []);
+  return <div>ProductList</div>;
+};
+...
+...
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+-------------------------
+ProductList.tsx:-
+-------------------------
+import React, { useEffect, useState } from "react";
+
+const ProductList = ({ category }: { category: string }) => {
+  const [products, setProducts] = useState<string[]>([]);
+  useEffect(() => {
+    console.log("Fetching Products in ", category);
+    setProducts(["Clothing", "Household"]);
+  }, []);
+  return <div>ProductList</div>;
+};
+
+export default ProductList;
+
+----------------------------
+App.tsx:-
+----------------------------
+import React, { useEffect, useRef, useState } from "react";
+import ProductList from "./components/ProductList";
+
+const App = () => {
+  const [category, setCategory] = useState("");
+
+  return (
+    <div>
+      <select
+        className="form-select"
+        onChange={(event) => setCategory(event.target.value)}
+      >
+        <option value=""></option>
+        <option value="Clothing">Clothing</option>
+        <option value="Household">Household</option>
+      </select>
+      <ProductList category={category} />
+    </div>
+  );
+};
+
+export default App;
+
+Output:-
+---------------
+Fetching Products in 
+Fetching Products in 
+
+Explantion:-
+-------------------
+Categories are not beign fetched when we choose category. Why is this happening?
+This is because of empty array that we pass as dependency to the effect hook. We told that this effect is not dependent on any value so React executed effect only once (Actually twice due rendering twice, and that too at the initial stage). We will have to tell React that this effect should be dependent on category prop. 
+
+In ProductList.tsx:-
+------------------------------
+...
+...
+useEffect(() => {
+    console.log("Fetching Products in ", category);
+    setProducts(["Clothing", "Household"]);
+  }, [category]);	//Any time when value of this dependency is changed, React will re-run this effect. 
+...
+...
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+-----------------------
+ProductList.tsx:-
+-----------------------
+import React, { useEffect, useState } from "react";
+
+const ProductList = ({ category }: { category: string }) => {
+  const [products, setProducts] = useState<string[]>([]);
+  useEffect(() => {
+    console.log("Fetching Products in ", category);
+    setProducts(["Clothing", "Household"]);
+  }, [category]);
+  return <div>ProductList</div>;
+};
+
+export default ProductList;
+
+----------------------------
+App.tsx:-
+----------------------------
+import React, { useEffect, useRef, useState } from "react";
+import ProductList from "./components/ProductList";
+
+const App = () => {
+  const [category, setCategory] = useState("");
+
+  return (
+    <div>
+      <select
+        className="form-select"
+        onChange={(event) => setCategory(event.target.value)}
+      >
+        <option value=""></option>
+        <option value="Clothing">Clothing</option>
+        <option value="Household">Household</option>
+      </select>
+      <ProductList category={category} />
+    </div>
+  );
+};
+
+export default App;
+
+Output:-
+------------------
+Fetching Products in 
+Fetching Products in 
+
+Now, suppose I select Clothing, this is added in output---> 
+Fetching Products in Clothing
+
+So, Output becomes---> 
+Fetching Products in 
+Fetching Products in
+Fetching Products in Clothing
+
+If we again select Clothing, nothing will change in the output. Because effect hook will not execute again because the value of category state is no change. It is again Clothing.  
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+*************************************************************Effect Clean Up*************************************************
+
+What if we have a chat component, and we are connecting to a chat server. At some point, we need to disconnect from the chat server. 
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+-----------------
+App.tsx:-
+-----------------
+import React, { useEffect, useRef, useState } from "react";
+import ProductList from "./components/ProductList";
+
+const connect = () => console.log("Connecting");
+const disconnect = () => console.log("Disconnecting");
+
+const App = () => {
+  useEffect(() => {
+    connect();
+					//This is not necessary to write in this way. But, in order to clean-up, We do 								
+    return () => disconnect();       	//in this way. 
+  });
+  return <div></div>;
+};
+
+export default App;
+
+-------------------------
+Output:-
+-------------------------
+Connecting
+Disconnecting
+Connecting
+
+Explanation:-
+------------------
+Why is this happening?
+As we know, in development, If strict mode is ON, React renders each component twice. 
+
+Connecting	[When component is rendered, effect is executed] 
+Disconnecting   [Before React render App component second time, React unmount the component from the screen, that's why clean
+		 up code is executed.  
+Connecting
+
+Conclusion--> In strict mode, React unmount the component before it renders the component again. 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+*************************************************************Fetching Data*************************************************
+
+In this section, we are going to use fake backend called JsonPlaceholder. 
+(jsonplaceholder.typicode.com)
+
+-----------------------------
+Sending HTTP Requests:-
+----------------------------
+>fetch()
+>axios		(It is a library that most of the developers use)
+
+npm i axios@1.3.4
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+--------------------
+App.tsx:-
+--------------------
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+
+const App = () => {
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    axios.get("https://jsonplaceholder.typicode.com/users");
+  });
+  return <div></div>;
+};
+
+export default App;
+
+--------------------
+Calling the server is not gonna happen immediately, perhaps it's gonna take seconds or longer, here the method axios.get('..') returns a promise. 
+
+Promise:- An object that holds the eventual result or failure of an asynchronous operation. (asynchronous is just a fency term for an operation that might take a long time. )
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+---------------
+App.tsx:-
+---------------
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+
+const App = () => {
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    axios
+      .get("https://jsonplaceholder.typicode.com/users")
+      .then((res) => console.log(res));
+  });
+  return <div></div>;
+};
+
+export default App;
+
+Output:-
+------------
+Object { data: (10) […], status: 200, statusText: "", headers: {…}, config: {…}, request: XMLHttpRequest }
+
+We can see various properties like data, status, statusText, headers and so on. If we write 
+..
+.then((res)=>console.log(res.data)); //We will get data array. 
+..
+
+
+We can see the complete structure of the data array in the console by expanding the content---> 
+Array(10) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+​
+0: Object { id: 1, name: "Leanne Graham", username: "Bret", … } //Let's say it is User1
+​
+1: Object { id: 2, name: "Ervin Howell", username: "Antonette", … } //It is User2
+​
+2: Object { id: 3, name: "Clementine Bauch", username: "Samantha", … } //It is User3
+​
+3: Object { id: 4, name: "Patricia Lebsack", username: "Karianne", … }
+​
+4: Object { id: 5, name: "Chelsey Dietrich", username: "Kamren", … }
+​
+5: Object { id: 6, name: "Mrs. Dennis Schulist", username: "Leopoldo_Corkery", … }
+​
+6: Object { id: 7, name: "Kurtis Weissnat", username: "Elwyn.Skiles", … }
+​
+7: Object { id: 8, name: "Nicholas Runolfsdottir V", username: "Maxime_Nienow", … }
+​
+8: Object { id: 9, name: "Glenna Reichert", username: "Delphine", … }
+​
+9: Object { id: 10, name: "Clementina DuBuque", username: "Moriah.Stanton", … }
+​
+
+So, we can fetch particular object--->
+..then((res)=>console.log(res.data[0])); //It will give an object
+Object { id: 1, name: "Leanne Graham", username: "Bret", … }
+If we do---> 
+..then((res)=>console.log(res.data[0].));	//We are further accessing data in this object(accessing name property) but, React is not providing auto-completion. This is where we can use typescript to add auto-completion, and type-safety to our code.
+
+interface User {
+  id: number;
+  name: string;
+} 
+We are not writing all the properties since we dont want to use them. 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+--------------
+App.tsx:-
+--------------
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users")
+      .then((res) => console.log(res.data[0].name));
+  });
+  return <div></div>;
+};
+
+export default App;
+
+Output:-
+Leanne Graham
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+------------------------
+App.tsx:-
+------------------------
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  useEffect(() => {
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users")
+      .then((res) => setUsers(res.data));
+  }, []);
+  return (
+    <ul>
+      {users.map((user) => (
+        <li key={user.id}>{user.name}</li>
+      ))}
+    </ul>
+  );
+};
+
+export default App;
+
+Output:-
+---------------
+Leanne Graham
+Ervin Howell
+Clementine Bauch
+Patricia Lebsack
+Chelsey Dietrich
+Mrs. Dennis Schulist
+Kurtis Weissnat
+Nicholas Runolfsdottir V
+Glenna Reichert
+Clementina DuBuque
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+*************************************************Understanding HTTP Requests***************************************
+
+What happens under the hood when you call get method (axios.get())
+When we call get method, axios sends an http request to the server.
+HTTP (Hypertext Transfer Protocol) --> A protocol for transferring data over the internet. 
+
+
+*************************************************Handling Errors*****************************************************
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+-----------------
+App.tsx:-
+-----------------
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/xusers")	//instead of users, I'm writing xusers. 
+      .then((res) => setUsers(res.data))
+      .catch((err) => setError(err.message));
+  }, []);
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+------------------
+On Console:-
+------------------
+Request failed with status code 404
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+***********************************************Working With Async and Await******************************************
+
+Some people don't like using then and catch methods like the above. 
+
+useEffect(async () => {	       //It will give error. Because React does not allow to pass async function in effect hook.
+    			       //So, we will define async function inside this effect. 
+    
+    await axios.get<User[]>("https://jsonplaceholder.typicode.com/xusers");
+    // .then((res) => setUsers(res.data))
+    // .catch((err) => setError(err.message));
+  }, []);
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+---------------
+App.tsx:-
+---------------
+import React, { useEffect, useRef, useState } from "react";
+import axios, { Axios, AxiosError } from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await axios.get<User[]>(
+          "https://jsonplaceholder.typicode.com/xusers"
+        );
+        setUsers(res.data);
+      } catch (err) {					//We can not do catch(err:AxiosError)
+        setError((err as AxiosError).message);
+      }
+    };
+    fetchUsers();
+    // .then((res) => setUsers(res.data))
+    // .catch((err) => setError(err.message));
+  }, []);
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+------------------
+But, using asyn/await make code little bit complex. Instead of using it, use then catch. 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+***********************************************Cancelling A Fetch Request******************************************
+
+
+Sometimes we need to return clean up function from our effect------>
+What if user navigates away from this page (above code), they don't want to wait for server to return the data and then render it here. So----> 
+
+When we fetch data in our effect, we should also provide a clean up function for cancelling the fetch request in case the data is no longer needed. 
+
+AbortController is a built in class in modern browser that allows us to abort asynchronous operations like fetch request, DOM manipulation, or any operation that might take a long time to complete. 
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+-------------
+App.tsx:-
+-------------
+import React, { useEffect, useRef, useState } from "react";
+import axios, { CanceledError } from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users", {
+        signal: controller.signal,
+      })
+      .then((res) => setUsers(res.data))
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+      });
+    return () => controller.abort();
+  }, []);
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+--------------------
+Output:-
+--------------------
+..
+..
+--------------------
+Description:-
+--------------------
+Network---> XHR ---> 
+We will see
+We have two requests sent to the users endpoint. The first request is cancelled because as part of mounting this component for the second time, React first remove the previous component. That is like user is navigating away from this page. At that moment, the clean function is called and our request is cancelled. So, this is another benefit of cancelling a fetch request. 
+(Remember Strict Mode is enabled)
+
+My Conclusion---> 
+First time, after the component is rendered and after that effect hook is started to execute. 
+It started to call the API. 
+React does not wait for the completion of request because fetching is asynchronous operation. (Request is being processed)
+React unmount the component, And since we are using Abort, the request will be aborted. (You can see network in console, the first request is cancelled, it is due to Abort. If we would not use abort, it would have  been green that means request would be completed asynchronously) 
+It will generate exception ---> Cancelled since the request is aborted.
+After that React again render the component, and executes effect. 
+Now, since React is not going to unmount the component. It will not use Abort. And there will be no exception. 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+***************************************************Showing A Loading Indicator*****************************************
+
+.spinner-border
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+-----------------
+App.tsx:-
+-----------------
+import React, { useEffect, useRef, useState } from "react";
+import axios, { CanceledError } from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users", {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+**********************************************************Deleting Data*****************************************
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+---------------------
+App.tsx:-
+---------------------
+import React, { useEffect, useRef, useState } from "react";
+import axios, { CanceledError } from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users", {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+  const deleteUser = (user: User) => {};	//We are going to work in this. 
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <button
+              className="btn btn-outline-danger"
+              onClick={() => deleteUser(user)}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+--------------------------------------
+In this function const deleteUser = (user: User) => {}; we have two options. 
+1)Optimistic Update --> We can update the UI first and then call the server to save the changes. We are optimistic that the call to the server is gonna succeed most of the time. So, we update the UI first to give the user instant feedback and then we call the server to persist the changes.  
+2) Pessimistic Update-->
+Call the server
+Update the UI 
+We assume that the call to the server is gonna fail. If call to the server is succeed, then we update the UI. With this approach our UI is gonna be little bit slow. 
+We will use Optimistic update in our code. 
+
+const deleteUser = (user: User) => {
+  setUsers(users.filter(u=>u.id!==user.id));
+};
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+---------------------
+App.tsx:-
+---------------------
+import React, { useEffect, useRef, useState } from "react";
+import axios, { CanceledError } from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users", {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+  const deleteUser = (user: User) => {
+    setUsers(users.filter((u) => u.id !== user.id));
+  };
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <button
+              className="btn btn-outline-danger"
+              onClick={() => deleteUser(user)}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+----------------------
+Now, you can update the UI instantly. 
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+Now, we should call the server to persist the changes. 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+-------------------
+App.tsx:-
+-------------------
+import React, { useEffect, useRef, useState } from "react";
+import axios, { CanceledError } from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users", {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+  const deleteUser = (user: User) => {
+    const originalUsers = [...users];
+    setUsers(users.filter((u) => u.id !== user.id));
+    axios
+      .delete("https://jsonplaceholder.typicode.com/xusers/" + user.id)
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <button
+              className="btn btn-outline-danger"
+              onClick={() => deleteUser(user)}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+*****************************************************Creating Data***********************************************
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+----------------
+App.tsx:-
+----------------
+import React, { useEffect, useRef, useState } from "react";
+import axios, { CanceledError } from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users", {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+  const deleteUser = (user: User) => {
+    const originalUsers = [...users];
+    setUsers(users.filter((u) => u.id !== user.id));
+    axios
+      .delete("https://jsonplaceholder.typicode.com/xusers/" + user.id)
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  const addUser = () => {
+    const newUser = { id: 0, name: "Mosh" };
+    setUsers([newUser, ...users]); //Optimistic Update. 
+    axios
+      .post("https://jsonplaceholder.typicode.com/users", newUser)
+      .then((res) => setUsers([newUser, ...users])); //Don't worry, It will just update the newUser That you already added.
+  };						     //I thought It should add a new user but it is not like that. 
+  return (					     //It is updating Mosh with new id. I think it is due to Post request. 
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <button className="btn btn-primary mb-3" onClick={addUser}>
+        Add
+      </button>
+
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <button
+              className="btn btn-outline-danger"
+              onClick={() => deleteUser(user)}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+More Concise Code
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+---------------
+App.tsx:-
+---------------
+import React, { useEffect, useRef, useState } from "react";
+import axios, { CanceledError } from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users", {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+  const deleteUser = (user: User) => {
+    const originalUsers = [...users];
+    setUsers(users.filter((u) => u.id !== user.id));
+    axios
+      .delete("https://jsonplaceholder.typicode.com/xusers/" + user.id)
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  const addUser = () => {
+    const originalUsers = [...users];
+    const newUser = { id: 0, name: "Mosh" };
+    setUsers([newUser, ...users]);
+    axios
+      .post("https://jsonplaceholder.typicode.com/users", newUser)
+      .then(({ data: savedUser }) => setUsers([savedUser, ...users])) //savedUser is just an alias. 
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <button className="btn btn-primary mb-3" onClick={addUser}>
+        Add
+      </button>
+
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <button
+              className="btn btn-outline-danger"
+              onClick={() => deleteUser(user)}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+******************************************************Updating Data**************************************************
+
+--------------
+App.tsx:-
+--------------
+import React, { useEffect, useRef, useState } from "react";
+import axios, { CanceledError } from "axios";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users", {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+  const deleteUser = (user: User) => {
+    const originalUsers = [...users];
+    setUsers(users.filter((u) => u.id !== user.id));
+    axios
+      .delete("https://jsonplaceholder.typicode.com/users/" + user.id)
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  const addUser = () => {
+    const originalUsers = [...users];
+    const newUser = { id: 0, name: "Mosh" };
+    setUsers([newUser, ...users]);
+    axios
+      .post("https://jsonplaceholder.typicode.com/users", newUser)
+      .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  const updateUser = (user: User) => {
+    const originalUsers = [...users];
+    const updatedUser = { ...user, name: user.name + "i!" };
+    setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+    axios
+      .patch(
+        "https://jsonplaceholder.typicode.com/xusers/" + user.id,
+        updatedUser
+      )
+      .catch((err: any) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <button className="btn btn-primary mb-3" onClick={addUser}>
+        Add
+      </button>
+
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <div>
+              <button
+                className="btn btn-outline-secondary mx-1"
+                onClick={() => updateUser(user)}
+              >
+                Update
+              </button>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => deleteUser(user)}
+              >
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+
+***************************************Extracting A Reusable API Client**************************************************
+
+We have repeated the url in many places in our code. 
+We are going to create a different module where we store our default configuration settings for making http calls. 
+
+src
+  services
+    api-client.ts
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+----------------------
+api-client.ts:-
+----------------------
+import axios,{CanceledError} from "axios";
+
+export default axios.create({
+    baseURL:'https://jsonplaceholder.typicode.com',
+})
+
+export {CanceledError};
+
+
+
+------------------------
+App.tsx:-
+------------------------
+import React, { useEffect, useRef, useState } from "react";
+import apiClient, { CanceledError } from "./services/api-client";
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    apiClient
+      .get<User[]>("/users", {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+  const deleteUser = (user: User) => {
+    const originalUsers = [...users];
+    setUsers(users.filter((u) => u.id !== user.id));
+    apiClient.delete("/users/" + user.id).catch((err) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
+  };
+  const addUser = () => {
+    const originalUsers = [...users];
+    const newUser = { id: 0, name: "Mosh" };
+    setUsers([newUser, ...users]);
+    apiClient
+      .post("/users", newUser)
+      .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  const updateUser = (user: User) => {
+    const originalUsers = [...users];
+    const updatedUser = { ...user, name: user.name + "i!" };
+    setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+    apiClient.patch("/users/" + user.id, updatedUser).catch((err: any) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
+  };
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <button className="btn btn-primary mb-3" onClick={addUser}>
+        Add
+      </button>
+
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <div>
+              <button
+                className="btn btn-outline-secondary mx-1"
+                onClick={() => updateUser(user)}
+              >
+                Update
+              </button>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => deleteUser(user)}
+              >
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+***************************************Extracting The User Service**************************************************
+
+
+src
+  service
+    App.tsx
+    api-client.ts
+    user-service.ts
+    
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+---------------
+App.tsx:-
+---------------
+import React, { useEffect, useRef, useState } from "react";
+import { CanceledError } from "./services/api-client";
+import userService, { User } from "./services/user-service";
+
+const App = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    const { request, cancel } = userService.getAllUsers();
+    request
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => cancel();
+  }, []);
+  const deleteUser = (user: User) => {
+    const originalUsers = [...users];
+    setUsers(users.filter((u) => u.id !== user.id));
+    userService.deleteUser(user.id).catch((err) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
+  };
+  const addUser = () => {
+    const originalUsers = [...users];
+    const newUser = { id: 0, name: "Mosh" };
+    setUsers([newUser, ...users]);
+    userService
+      .createUser(newUser)
+      .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  const updateUser = (user: User) => {
+    const originalUsers = [...users];
+    const updatedUser = { ...user, name: user.name + "i!" };
+    setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+    userService.updateUser(updatedUser).catch((err: any) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
+  };
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <button className="btn btn-primary mb-3" onClick={addUser}>
+        Add
+      </button>
+
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <div>
+              <button
+                className="btn btn-outline-secondary mx-1"
+                onClick={() => updateUser(user)}
+              >
+                Update
+              </button>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => deleteUser(user)}
+              >
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+
+------------------
+user-service.ts
+------------------
+import apiClient from "./api-client";
+
+export interface User {
+    id: number;
+    name: string;
+  }
+
+class UserService{
+    getAllUsers(){
+        const controller = new AbortController();
+       const request =   apiClient
+      .get<User[]>("/users", {
+        signal: controller.signal,
+      })
+      return {request,cancel:()=>controller.abort()}
+    }
+    deleteUser(id:number){
+        return apiClient.delete("/users/" + id)
+    }
+    createUser(user:User){
+        return apiClient
+        .post("/users", user)
+    }
+    updateUser(user:User){
+       return  apiClient.patch("/users/" + user.id, user)
+    }
+}
+
+export default new UserService();
+
+-----------------
+api-client.ts
+-----------------
+import axios,{CanceledError} from "axios";
+
+export default axios.create({
+    baseURL:'https://jsonplaceholder.typicode.com',
+})
+
+export {CanceledError};
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+********************************************Creating A Custom Data Fetching Hook**********************************
+
+src 
+  hooks		(It is a folder)
+    useUsers	(All the hooks should be started with use)
+    
+    
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+----------------------
+api-client.ts
+----------------------
+import axios,{CanceledError} from "axios";
+
+export default axios.create({
+    baseURL:'https://jsonplaceholder.typicode.com',
+})
+
+export {CanceledError};
+
+--------------------
+user-service.ts:-
+--------------------
+import apiClient from "./api-client";
+
+export interface User {
+    id: number;
+    name: string;
+  }
+
+class UserService{
+    getAll(){
+        const controller = new AbortController();
+       const request =   apiClient
+      .get<User[]>("/users", {
+        signal: controller.signal,
+      })
+      return {request,cancel:()=>controller.abort()}
+    }
+    deleteUser(id:number){
+        return apiClient.delete("/users/" + id)
+    }
+    createUser(user:User){
+        return apiClient
+        .post("/users", user)
+    }
+    updateUser(user:User){
+       return  apiClient.patch("/users/" + user.id, user)
+    }
+}
+
+export default new UserService();
+
+--------------------
+useUsers.ts
+--------------------
+import { useEffect, useState } from "react";
+import userService, { User } from "../services/user-service";
+import { CanceledError } from "../services/api-client";
+
+const useUsers = ()=>{
+    const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    const { request, cancel } = userService.getAll();
+    request
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => cancel();
+  }, []);
+  return {users,error,isLoading,setUsers,setError}
+}
+
+export default useUsers;
+
+------------------
+App.tsx:-
+------------------
+import React, { useEffect, useRef, useState } from "react";
+import { CanceledError } from "./services/api-client";
+import userService, { User } from "./services/user-service";
+import useUsers from "./hooks/useUsers";
+
+const App = () => {
+  const { users, error, isLoading, setUsers, setError } = useUsers();
+  const deleteUser = (user: User) => {
+    const originalUsers = [...users];
+    setUsers(users.filter((u) => u.id !== user.id));
+    userService.deleteUser(user.id).catch((err) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
+  };
+  const addUser = () => {
+    const originalUsers = [...users];
+    const newUser = { id: 0, name: "Mosh" };
+    setUsers([newUser, ...users]);
+    userService
+      .createUser(newUser)
+      .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  const updateUser = (user: User) => {
+    const originalUsers = [...users];
+    const updatedUser = { ...user, name: user.name + "i!" };
+    setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+    userService.updateUser(updatedUser).catch((err: any) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
+  };
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <button className="btn btn-primary mb-3" onClick={addUser}>
+        Add
+      </button>
+
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <div>
+              <button
+                className="btn btn-outline-secondary mx-1"
+                onClick={() => updateUser(user)}
+              >
+                Update
+              </button>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => deleteUser(user)}
+              >
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+******************************************************Creating A Generic HTTP Service*********************************
+
+src
+  services
+    http-service.ts
+    
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+----------------
+api-client.ts:-
+----------------
+import axios,{CanceledError} from "axios";
+
+export default axios.create({
+    baseURL:'https://jsonplaceholder.typicode.com',
+})
+
+export {CanceledError};
+
+----------------------
+user-service.ts:-
+----------------------
+import apiClient from "./api-client";
+import create from "./http-service";
+
+export interface User {
+    id: number;
+    name: string;
+  }
+
+
+export default create('/users');
+
+-------------------
+useUsers.ts:-
+-------------------
+import { useEffect, useState } from "react";
+import userService, { User } from "../services/user-service";
+import { CanceledError } from "../services/api-client";
+
+const useUsers = ()=>{
+    const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    const { request, cancel } = userService.getAll<User>();
+    request
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => cancel();
+  }, []);
+  return {users,error,isLoading,setUsers,setError}
+}
+
+export default useUsers;
+
+----------------------
+http-service.ts:-
+----------------------
+import apiClient from "./api-client";
+
+interface Entity{
+    id:number;
+    
+}
+
+class HttpService{
+    endpoint:string;
+    constructor(endpoint:string){
+        this.endpoint = endpoint;
+    }
+    getAll<T>(){
+        const controller = new AbortController();
+       const request =   apiClient
+      .get<T[]>(this.endpoint, {
+        signal: controller.signal,
+      })
+      return {request,cancel:()=>controller.abort()}
+    }
+    delete(id:number){
+        return apiClient.delete(this.endpoint+"/" + id)
+    }
+    create<T>(entity:T){
+        return apiClient
+        .post(this.endpoint, entity)
+    }
+    update<T extends Entity>(entity:T){
+       return  apiClient.patch(this.endpoint+"/" + entity.id, entity)
+    }
+}
+
+const create = (endpoint:string)=>new HttpService(endpoint);
+
+export default create;
+
+-------------------
+App.tsx:-
+-------------------
+import React, { useEffect, useRef, useState } from "react";
+import { CanceledError } from "./services/api-client";
+import userService, { User } from "./services/user-service";
+import useUsers from "./hooks/useUsers";
+
+const App = () => {
+  const { users, error, isLoading, setUsers, setError } = useUsers();
+  const deleteUser = (user: User) => {
+    const originalUsers = [...users];
+    setUsers(users.filter((u) => u.id !== user.id));
+    userService.delete(user.id).catch((err) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
+  };
+  const addUser = () => {
+    const originalUsers = [...users];
+    const newUser = { id: 0, name: "Mosh" };
+    setUsers([newUser, ...users]);
+    userService
+      .create(newUser)
+      .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+  const updateUser = (user: User) => {
+    const originalUsers = [...users];
+    const updatedUser = { ...user, name: user.name + "i!" };
+    setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+    userService.update(updatedUser).catch((err: any) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
+  };
+  return (
+    <>
+      {error && <p className="text-danger">{error}</p>}
+      {isLoading && <div className="spinner-border"></div>}
+      <button className="btn btn-primary mb-3" onClick={addUser}>
+        Add
+      </button>
+
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <div>
+              <button
+                className="btn btn-outline-secondary mx-1"
+                onClick={() => updateUser(user)}
+              >
+                Update
+              </button>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => deleteUser(user)}
+              >
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default App;
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+***************************************************************THE END*************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

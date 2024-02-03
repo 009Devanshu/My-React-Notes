@@ -532,7 +532,7 @@ Message 1
 Message 1
 Message 1
 
-
+((But, Still (I saw on chatgpt) it is not a pure component because, For a component to be pure, it should rely only on its props and state for rendering))
 ************************************************************************************Sharing State Between Components***********************************************************************
 
 Some times we need to share state between components. Let's imaginve we are going to build an e-commerce application. 
