@@ -888,7 +888,25 @@ const useGenres = ()=>{
     apiClient
       .get<FetchGenresResponse>("/genres",{signal:controller.signal})
       .then((res) => {
-        setGenres(res.data.results);
+        setGenres(resimport { HStack, Switch, Text, useColorMode } from "@chakra-ui/react";
+import React from "react";
+
+const ColorModeSwitch = () => {
+  const { toggleColorMode, colorMode } = useColorMode(); //colorMode represents current Mode
+  return (
+    <HStack>
+      <Switch
+        colorScheme="green"
+        isChecked={colorMode === "dark"}
+        onChange={toggleColorMode}
+      />
+      <Text>Dark Mode</Text>
+    </HStack>
+  );
+};
+
+export default ColorModeSwitch;
+.data.results);
         setLoading(false)
       })
       .catch((err) =>{
@@ -1033,6 +1051,30 @@ export default useGames;
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+src
+  components
+    ColorModeSwitch.tsx
+    CriticScore.tsx
+    GameCard.tsx
+    GameCardContainer.tsx
+    GameCardSkeleton.tsx
+    GameGrid.tsx
+    GenreList.tsx
+    NavBar.tsx
+    PlatformIconList.tsx
+  services
+    api-client.ts
+    image-url.ts
+  hooks
+    useData.ts
+    useGames.ts
+    useGenres.ts
+  App.tsx
+  main.tsx
+  index.html    
+    
+ 
 
 -----------------
 useData.ts:-
@@ -1179,24 +1221,382 @@ const GameGrid = () => {
         ))}
       </SimpleGrid>
     </>
+  );import { Badge } from "@chakra-ui/react";
+import React from "react";
+
+interface Props {
+  score: number;
+}
+
+const CriticScore = ({ score }: Props) => {
+  let color = score > 75 ? "green" : score > 60 ? "yello" : "";
+  return (
+    <Badge colorScheme={color} fontSize="14px" paddingX={2} borderRadius="4px">
+      {score}
+    </Badge>
+  );
+};
+
+export default CriticScore;
+
+};
+
+export default GameGrid;
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+***************************************************Displaying The Genres****************************************
+
+List component of Chakra displays list without bullet-points.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+---------------
+useGenres.ts
+---------------
+import useData from "./useData";
+
+export interface Genre{
+    id:number;
+    name:string;
+    image_background:string;			//New Line 
+}
+
+
+
+const useGenres = ()=> useData<Genre>('/genres');
+
+export default useGenres;
+
+-------------------
+GenreList.tsx
+-------------------
+import { HStack, Image, List, ListItem, Text } from "@chakra-ui/react";
+import useGenres from "../hooks/useGenres";
+import getCroppedImageUrl from "../services/image-url";
+
+const GenreList = () => {
+  const { data } = useGenres();
+  return (
+    <List>						//Using Chakra UI List
+      {data.map((genre) => (
+        <ListItem key={genre.id} paddingY="5px">                    
+          <HStack>
+            <Image
+              boxSize="32px"
+              borderRadius={8}
+              src={getCroppedImageUrl(genre.image_background)}
+            />
+            <Text fontSize="lg">{genre.name}</Text>
+          </HStack>
+        </ListItem>
+      ))}
+    </List>
+  );
+};
+
+export default GenreList;
+
+---------------
+App.tsx
+---------------
+import { Grid, GridItem, Show } from "@chakra-ui/react";
+import NavBar from "./components/NavBar";
+import GameGrid from "./components/GameGrid";
+import GenreList from "./components/GenreList";
+function App() {
+  return (
+    <Grid
+      templateAreas={{
+        base: `"nav" "main"`,
+        lg: '"nav nav" "aside main"', //Large-Screens wider than 1024 pixels
+      }}
+    >
+      <GridItem area="nav">
+        <NavBar />
+      </GridItem>
+      <Show above="lg">
+        <GridItem area="aside" paddingX={5}>
+          <GenreList />
+        </GridItem>
+      </Show>
+
+      <GridItem area="main">
+        <GameGrid />
+      </GridItem>
+    </Grid>
+  );
+}
+
+export default App;
+
+-----------------------------
+You will see that your game cards are sticking with each other. (Which we have to solve)
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+First of all we should fix the width of Aside panel---> 
+
+-------------------
+App.tsx-->
+-------------------
+import { Grid, GridItem, Show } from "@chakra-ui/react";
+import NavBar from "./components/NavBar";
+import GameGrid from "./components/GameGrid";
+import GenreList from "./components/GenreList";
+function App() {
+  return (
+    <Grid
+      templateAreas={{
+        base: `"nav" "main"`,
+        lg: '"nav nav" "aside main"', //Large-Screens wider than 1024 pixels
+      }}
+      templateColumns={{
+        base: "1fr",
+        lg: "200px 1fr",
+      }}
+    >
+      <GridItem area="nav">
+        <NavBar />
+      </GridItem>
+      <Show above="lg">
+        <GridItem area="aside" paddingX={5}>
+          <GenreList />
+        </GridItem>
+      </Show>
+
+      <GridItem area="main">
+        <GameGrid />
+      </GridItem>
+    </Grid>
+  );
+}
+
+export default App;
+
+----------------------
+You will see that the Width of aside panel is 200px and Main content will occupy the remaining width. But, Still the Game Cards are sticking with each other. Why is this happening? 
+We had assigned width of 300px to Each Game Card, Aside panel is 200px. To total it becomes almost 1100px. But, our screen is 1024px. How to solve this---> 
+>> Remove the fixed width that applied on these cards --> 
+   And make width width="100%". But, even if you don't use this width, it will be 100% automatically. 
+   
+------------------------
+GameCardContainer.tsx
+------------------------
+import { Box } from "@chakra-ui/react";
+import React, { Children, ReactNode } from "react";
+
+interface Props {
+  children: ReactNode;
+}
+
+const GameCardContainer = ({ children }: Props) => {
+  return (
+    <Box borderRadius={10} overflow={"hidden"}>
+      {children}
+    </Box>
+  );
+};
+
+export default GameCardContainer;
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+---------------------
+useGenres.ts
+---------------------
+import useData from "./useData";
+
+export interface Genre{
+    id:number;
+    name:string;
+    image_background:string;			//New Line
+}
+
+
+
+const useGenres = ()=> useData<Genre>('/genres');
+
+export default useGenres;
+
+--------------------
+GenreList.tsx
+--------------------
+import { HStack, Image, List, ListItem, Text } from "@chakra-ui/react";
+import useGenres from "../hooks/useGenres";
+import getCroppedImageUrl from "../services/image-url";
+
+const GenreList = () => {
+  const { data } = useGenres();
+  return (
+    <List> 						//Using ChakraUI List
+      {data.map((genre) => (
+        <ListItem key={genre.id} paddingY="5px">        //Using ChakraUI ListItem
+          <HStack>
+            <Image
+              boxSize="32px"
+              borderRadius={8}
+              src={getCroppedImageUrl(genre.image_background)}       //New Line 
+            />
+            <Text fontSize="lg">{genre.name}</Text>
+          </HStack>
+        </ListItem>
+      ))}
+    </List>
+  );
+};
+
+export default GenreList;
+
+---------------
+App.tsx
+---------------
+import { Grid, GridItem, Show } from "@chakra-ui/react";
+import NavBar from "./components/NavBar";
+import GameGrid from "./components/GameGrid";
+import GenreList from "./components/GenreList";
+function App() {
+  return (
+    <Grid
+      templateAreas={{
+        base: `"nav" "main"`,
+        lg: '"nav nav" "aside main"', //Large-Screens wider than 1024 pixels
+      }}
+      templateColumns={{			//New
+        base: "1fr",
+        lg: "200px 1fr",
+      }}
+    >
+      <GridItem area="nav">
+        <NavBar />
+      </GridItem>
+      <Show above="lg">
+        <GridItem area="aside" paddingX={5}>
+          <GenreList />
+        </GridItem>
+      </Show>
+
+      <GridItem area="main">
+        <GameGrid />
+      </GridItem>
+    </Grid>
+  );
+}
+
+export default App;
+
+------------------------
+GameCardContainer.tsx
+------------------------
+import { Box } from "@chakra-ui/react";
+import React, { Children, ReactNode } from "react";
+
+interface Props {
+  children: ReactNode;
+}
+
+const GameCardContainer = ({ children }: Props) => {
+  return (
+    <Box borderRadius={10} overflow={"hidden"}>    		//Modigy this line
+      {children}
+    </Box>
+  );
+};
+
+export default GameCardContainer;
+
+-------------------
+GameGrid.tsx
+-------------------
+import React, { useEffect, useState } from "react";
+import apiClient from "../services/api-client";
+import { SimpleGrid, Text } from "@chakra-ui/react";
+import useGames from "../hooks/useGames";
+import GameCards from "./GameCard";
+import GameCard from "./GameCard";
+import GameCardSkeleton from "./GameCardSkeleton";
+import GameCardContainer from "./GameCardContainer";
+
+const GameGrid = () => {
+  const { data, error, isLoading } = useGames();
+  const Skeletons = [1, 2, 3, 4, 5, 6];
+  return (
+    <>
+      {error && <Text>{error}</Text>}
+      <SimpleGrid
+        columns={{ sm: 1, md: 2, lg: 3, xl: 5 }}
+        padding="10px"
+        spacing={3}					//Modify this line
+      >
+        {isLoading &&
+          Skeletons.map((skeleton) => (
+            <GameCardContainer>
+              <GameCardSkeleton key={skeleton} />
+            </GameCardContainer>
+          ))}
+        {data.map((game) => (
+          <GameCardContainer>
+            <GameCard key={game.id} game={game} />
+          </GameCardContainer>
+        ))}
+      </SimpleGrid>
+    </>
   );
 };
 
 export default GameGrid;
 
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
 
+*************************************************Showing a Spinner*****************************************
 
-***************************************************
+>>>>>>>>>>>>>>>>>>>>>>>>>>START
+-----------------
+GenreList.tsx
+-----------------
+import { HStack, Image, List, ListItem, Spinner, Text } from "@chakra-ui/react";
+import useGenres from "../hooks/useGenres";
+import getCroppedImageUrl from "../services/image-url";
 
+const GenreList = () => {
+  const { data, isLoading, error } = useGenres();
 
+  if (error) return null;
+  if (isLoading) return <Spinner />;
+  return (
+    <List>
+      {data.map((genre) => (
+        <ListItem key={genre.id} paddingY="5px">
+          <HStack>
+            <Image
+              boxSize="32px"
+              borderRadius={8}
+              src={getCroppedImageUrl(genre.image_background)}
+            />
+            <Text fontSize="lg">{genre.name}</Text>
+          </HStack>
+        </ListItem>
+      ))}
+    </List>
+  );
+};
 
+export default GenreList;
 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
 
-
-
-
+*************************************************THE END*****************************************
 
 
 
