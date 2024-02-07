@@ -431,8 +431,8 @@ export interface Game {
  
 
 const useGames = (selectedGenre:Genre | null)=>useData<Game>('/games');  //In next code, we will pass this selectedGenre to Data
-export default useGames;						 //hook, But our Data Hook only takes endpoint, But, we 		
-							
+export default useGames;						 //data hook, But our Data Hook only takes endpoint,  		
+									 //But, we
 /////////////////////
 can make it more flexible by giving it AxiosRequestConfig object
 

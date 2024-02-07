@@ -5,11 +5,15 @@ npm create vite@4.1.0
   Select Framework--> React
   Select a Variant--> Typescript
   
-cd into this folder-->
-  npm i
+cd into this folder-->  (Remain in linux terminal)
+  npm i			(In linux terminal)
 
 And then --> 
-  npm run dev
+  npm run dev  		(In linux terminal)  
+  
+Now, you can go into vs code. 
+  
+Clear index.css and App.css
   
 Git-->
   git init
@@ -165,7 +169,7 @@ function App() {
       <GridItem area="nav" bg="coral">
         Nav
       </GridItem>
-      <Show above="lg">				//For Screens equal or larger than large screen. 
+      <Show above="lg">			 	//For Screens equal or larger than large screen. 
         <GridItem area="aside" bg="gold">
           Aside
         </GridItem>
@@ -213,7 +217,7 @@ Copy paste webp logo into assets folder.
 NavBar.tsx:-
 ---------------------
 import { HStack, Image, Text } from "@chakra-ui/react";
-import logo from "../assets/logo.webp";
+import logo from "../assets/logo.webp";        //You can give any name. Here you game logo. 
 
 const NavBar = () => {
   return (

@@ -614,7 +614,7 @@ export default GameCard;
 ****************************************Refactor: Removing Duplicate Styles*********************************
 
 components
-  GameCardContainer
+  GameCardContainer.tsx
   
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
@@ -812,44 +812,33 @@ export default GenreList;
 ---------------
 App.tsx
 ---------------
-import { useEffect, useState } from "react";
-import apiClient from "../services/api-client";
-import { CanceledError } from "axios";
+import { Button, ButtonGroup, Grid, GridItem, Show } from "@chakra-ui/react";
+import NavBar from "./components/NavBar";
+import { GameGrid } from "./components/GameGrid";
+import GenreList from "./components/GenreList";
+function App() {
+  return (
+    <Grid
+      templateAreas={{ base: `"nav" "main"`, lg: `"nav nav" "aside main"` }}
+    >
+      <GridItem area="nav">
+        <NavBar />
+      </GridItem>
+      <Show above="lg">
+        <GridItem area="aside">
+          <GenreList />
+        </GridItem>
+      </Show>
 
-interface Genre{
-    id:number;
-    name:string;
+      <GridItem area="main">
+        <GameGrid />
+      </GridItem>
+    </Grid>
+  );
 }
 
-interface FetchGenresResponse{
-    count:number;
-    results:Genre[]
-}
+export default App;
 
-const useGenres = ()=>{
-    const [genres, setGenres] = useState<Genre[]>([]);
-  const [error, setError] = useState("");
-  const [isLoading,setLoading] = useState(false);
-  useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    apiClient
-      .get<FetchGenresResponse>("/genres",{signal:controller.signal})
-      .then((res) => {
-        setGenres(res.data.results);
-        setLoading(false)
-      })
-      .catch((err) =>{
-          if(err instanceof CanceledError) return;
-          setError(err.message);
-          setLoading(false)
-        });
-      return ()=>controller.abort();
-  },[]);
-  return {genres,error,isLoading};
-}
-
-export default useGenres;
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
 
@@ -888,25 +877,7 @@ const useGenres = ()=>{
     apiClient
       .get<FetchGenresResponse>("/genres",{signal:controller.signal})
       .then((res) => {
-        setGenres(resimport { HStack, Switch, Text, useColorMode } from "@chakra-ui/react";
-import React from "react";
-
-const ColorModeSwitch = () => {
-  const { toggleColorMode, colorMode } = useColorMode(); //colorMode represents current Mode
-  return (
-    <HStack>
-      <Switch
-        colorScheme="green"
-        isChecked={colorMode === "dark"}
-        onChange={toggleColorMode}
-      />
-      <Text>Dark Mode</Text>
-    </HStack>
-  );
-};
-
-export default ColorModeSwitch;
-.data.results);
+        setGenres(res.data.results);
         setLoading(false)
       })
       .catch((err) =>{
@@ -1221,25 +1192,7 @@ const GameGrid = () => {
         ))}
       </SimpleGrid>
     </>
-  );import { Badge } from "@chakra-ui/react";
-import React from "react";
-
-interface Props {
-  score: number;
-}
-
-const CriticScore = ({ score }: Props) => {
-  let color = score > 75 ? "green" : score > 60 ? "yello" : "";
-  return (
-    <Badge colorScheme={color} fontSize="14px" paddingX={2} borderRadius="4px">
-      {score}
-    </Badge>
   );
-};
-
-export default CriticScore;
-
-};
 
 export default GameGrid;
 
