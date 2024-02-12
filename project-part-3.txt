@@ -1465,6 +1465,7 @@ export default App;
 
 *************************************************Sorting Games*************************************
 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
 ___________________
 SortSelector.tsx
 ___________________
@@ -1477,7 +1478,7 @@ interface Props {
   sortOrder: string;
 }
 
-const SortSelector = ({ onSelectSortOrder, sortOrder }: Props) => {
+export const SortSelector = ({ onSelectSortOrder, sortOrder }: Props) => {
   const sortOrders = [
     { value: "", label: "Relevance" },
     { value: "-added", label: "Date added" },
@@ -1511,21 +1512,65 @@ const SortSelector = ({ onSelectSortOrder, sortOrder }: Props) => {
   );
 };
 
-export default SortSelector;
+
+--------------------
+image-url.ts
+--------------------
+const getCroppedImageUrl = (url:string)=>{
+    if(!url) return "";
+    const target = 'media/';
+    const index = url.indexOf(target) + 'media/'.length;
+    return url.slice(0,index) + 'crop/600/400/'+url.slice(index);
+}
+export default getCroppedImageUrl;
+
+-------------------
+useGames.ts
+-------------------
+import { GameQuery } from "../App";
+import useData from "./useData";
+import { Genre } from "./useGenres";
+
+export interface Platform{
+  id:number;
+  name:string;
+  slug:string;
+}
+
+export interface Game {
+    id: number;
+    name: string;
+    background_image:string;
+    parent_platforms:{platform:Platform}[];
+    metacritic:number;
+  }
+  
+ 
+
+const useGames = (gameQuery:GameQuery)=>useData<Game>('/games',{params:{genres:gameQuery.genre?.id,platforms:gameQuery.platform?.id,ordering:gameQuery.sortOrder}},[gameQuery]);
+export default useGames;
 
 
 -------------------
 App.tsx
 -------------------
-import { Grid, GridItem, HStack, Show } from "@chakra-ui/react";
+import {
+  Button,
+  ButtonGroup,
+  Grid,
+  GridItem,
+  HStack,
+  Show,
+} from "@chakra-ui/react";
 import NavBar from "./components/NavBar";
-import GameGrid from "./components/GameGrid";
+
 import GenreList from "./components/GenreList";
+import GameGrid from "./components/GameGrid";
 import { useState } from "react";
 import { Genre } from "./hooks/useGenres";
 import PlatformSelector from "./components/PlatformSelector";
-import { Game, Platform } from "./hooks/useGames";
-import SortSelector from "./components/SortSelector";
+import { Platform } from "./hooks/useGames";
+import { SortSelector } from "./components/SortSelector";
 
 export interface GameQuery {
   genre: Genre | null;
@@ -1537,10 +1582,7 @@ function App() {
   const [gameQuery, setGameQuery] = useState<GameQuery>({} as GameQuery);
   return (
     <Grid
-      templateAreas={{
-        base: `"nav" "main"`,
-        lg: '"nav nav" "aside main"', //Large-Screens wider than 1024 pixels
-      }}
+      templateAreas={{ base: `"nav" "main"`, lg: `"nav nav" "aside main"` }}
       templateColumns={{
         base: "1fr",
         lg: "200px 1fr",
@@ -1580,45 +1622,191 @@ function App() {
 
 export default App;
 
-------------------
-useGames.ts
-------------------
-import { GameQuery } from "../App";
-import useData from "./useData";
-import { Genre } from "./useGenres";
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END
 
-export interface Platform{
-  id:number;
-  name:string;
-  slug:string;
-}
+**************************************Handling The games without an image*************************************
 
-export interface Game {
-    id: number;
-    name: string;
-    background_image:string;
-    parent_platforms:{platform:Platform}[];
-    metacritic:number;
-  }
-  
- 
-
-const useGames = (gameQuery:GameQuery)=>useData<Game>('/games',{params:{genres:gameQuery.genre?.id,platforms:gameQuery.platform?.id,ordering:gameQuery.sortOrder}},[gameQuery]);
-export default useGames;
-
-------------------
-image-urls.ts
-------------------
-
+---------------
+image-url.ts
+---------------
+import noImage from '../assets/placeholder.png'
 const getCroppedImageUrl = (url:string)=>{
-    if(!url) return '';
+    if(!url) return noImage;
     const target = 'media/';
     const index = url.indexOf(target) + 'media/'.length;
     return url.slice(0,index) + 'crop/600/400/'+url.slice(index);
 }
 export default getCroppedImageUrl;
 
-*****************************************************
+
+******************************************Fixing The issues with Chakra Menus*************************************
+
+-----------------
+App.tsx
+-----------------
+import {
+  Button,
+  ButtonGroup,
+  Grid,
+  GridItem,
+  Flex,
+  Show,
+  Box,
+} from "@chakra-ui/react";
+import NavBar from "./components/NavBar";
+
+import GenreList from "./components/GenreList";
+import GameGrid from "./components/GameGrid";
+import { useState } from "react";
+import { Genre } from "./hooks/useGenres";
+import PlatformSelector from "./components/PlatformSelector";
+import { Platform } from "./hooks/useGames";
+import { SortSelector } from "./components/SortSelector";
+
+export interface GameQuery {
+  genre: Genre | null;
+  platform: Platform | null;
+  sortOrder: string;
+}
+
+function App() {
+  const [gameQuery, setGameQuery] = useState<GameQuery>({} as GameQuery);
+  return (
+    <Grid
+      templateAreas={{ base: `"nav" "main"`, lg: `"nav nav" "aside main"` }}
+      templateColumns={{
+        base: "1fr",
+        lg: "200px 1fr",
+      }}
+    >
+      <GridItem area="nav">
+        <NavBar />
+      </GridItem>
+      <Show above="lg">
+        <GridItem area="aside" paddingX={5}>
+          <GenreList
+            onSelectGenre={(genre) => setGameQuery({ ...gameQuery, genre })}
+          />
+        </GridItem>
+      </Show>
+
+      <GridItem area="main">
+        <Flex paddingLeft={2} marginBottom={5}>
+          <Box marginRight={5}>
+            <PlatformSelector
+              selectedPlatform={gameQuery.platform}
+              onSelectPlatform={(platform) =>
+                setGameQuery({ ...gameQuery, platform })
+              }
+            />
+          </Box>
+          <SortSelector
+            sortOrder={gameQuery.sortOrder}
+            onSelectSortOrder={(sortOrder) =>
+              setGameQuery({ ...gameQuery, sortOrder })
+            }
+          />
+        </Flex>
+        <GameGrid gameQuery={gameQuery} />
+      </GridItem>
+    </Grid>
+  );
+}
+
+export default App;
+
+
+**********************************************Building Search Input**********************************
+
+
+components
+  SearchInput.tsx
+  
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>START
+
+--------------------
+SearchInput.tsx
+--------------------
+import { Input, InputGroup, InputLeftElement } from "@chakra-ui/react";
+import { BsSearch } from "react-icons/bs";
+
+const SearchInput = () => {
+  return (
+    <InputGroup>
+      <InputLeftElement children={<BsSearch />} />
+      <Input borderRadius={20} placeholder="Search games..." variant="filled" />
+    </InputGroup>
+  );
+};
+
+export default SearchInput;
+  
+
+----------------------
+ColorModeSwitch.tsx
+----------------------
+import { HStack, Switch, Text, useColorMode } from "@chakra-ui/react";
+import React from "react";
+
+const ColorModeSwitch = () => {
+  const { toggleColorMode, colorMode } = useColorMode();
+  return (
+    <HStack>
+      <Switch
+        colorScheme="green"
+        isChecked={colorMode === "dark"}
+        onChange={toggleColorMode}
+      />
+      <Text whiteSpace="nowrap">Dark Mode</Text>
+    </HStack>
+  );
+};
+
+export default ColorModeSwitch;
+
+
+-------------------
+NavBar.tsx
+-------------------
+import { HStack, Image, Text } from "@chakra-ui/react";
+import logo from "../assets/logo.jpeg";
+import ColorModeSwitch from "./ColorModeSwitch";
+import SearchInput from "./SearchInput";
+
+const NavBar = () => {
+  return (
+    <HStack padding="10px">
+      <Image src={logo} boxSize="60px" borderRadius={5} />
+      <SearchInput />
+      <ColorModeSwitch />
+    </HStack>
+  );
+};
+
+export default NavBar;
+
+
+********************************************************THE END*****************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
