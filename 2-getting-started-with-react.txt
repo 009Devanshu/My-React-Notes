@@ -49,6 +49,7 @@ public:- This is where public assets of our website exists like images, video fi
 src:- 
 	App.tsx			(App component--> The only component in our project right now)(Clear this we will write our own code here)
 	App.css			(clear this)
+	Main.tsx
 index.html:-
 package.json
 tsconfig.json---> Telling typescript compiler to compile typescript code to javascript.
